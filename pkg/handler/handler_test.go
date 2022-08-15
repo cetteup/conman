@@ -17,7 +17,7 @@ func TestHandler_ReadGlobalConfig(t *testing.T) {
 	type test struct {
 		name            string
 		givenGame       Game
-		expect          func(repository *MockfileRepository, documentsDirPath string)
+		expect          func(repository *MockFileRepository, documentsDirPath string)
 		wantErrContains string
 	}
 
@@ -25,14 +25,14 @@ func TestHandler_ReadGlobalConfig(t *testing.T) {
 		{
 			name:      "successfully reads config file",
 			givenGame: GameBf2,
-			expect: func(repository *MockfileRepository, documentsDirPath string) {
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
 				repository.EXPECT().ReadFile(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, globalConFileName))).Return([]byte{}, nil)
 			},
 		},
 		{
 			name:            "error for unsupported game",
 			givenGame:       "not-a-supported-game",
-			expect:          func(repository *MockfileRepository, documentsDirPath string) {},
+			expect:          func(repository *MockFileRepository, documentsDirPath string) {},
 			wantErrContains: "game not supported",
 		},
 	}
@@ -66,7 +66,7 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 		name            string
 		givenGame       Game
 		givenProfile    string
-		expect          func(repository *MockfileRepository, documentsDirPath string)
+		expect          func(repository *MockFileRepository, documentsDirPath string)
 		wantErrContains string
 	}
 
@@ -75,14 +75,14 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 			name:         "successfully reads config file",
 			givenGame:    GameBf2,
 			givenProfile: "0001",
-			expect: func(repository *MockfileRepository, documentsDirPath string) {
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
 				repository.EXPECT().ReadFile(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return([]byte{}, nil)
 			},
 		},
 		{
 			name:            "error for unsupported game",
 			givenGame:       "not-a-supported-game",
-			expect:          func(repository *MockfileRepository, documentsDirPath string) {},
+			expect:          func(repository *MockFileRepository, documentsDirPath string) {},
 			wantErrContains: "game not supported",
 		},
 	}
@@ -111,8 +111,8 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 	}
 }
 
-func getHandlerWithDependencies(t *testing.T) (*Handler, *MockfileRepository) {
+func getHandlerWithDependencies(t *testing.T) (*Handler, *MockFileRepository) {
 	ctrl := gomock.NewController(t)
-	mockRepository := NewMockfileRepository(ctrl)
+	mockRepository := NewMockFileRepository(ctrl)
 	return New(mockRepository), mockRepository
 }

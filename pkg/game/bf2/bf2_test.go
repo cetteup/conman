@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/cetteup/conman/pkg/config"
+	"github.com/cetteup/conman/pkg/game"
 	"github.com/cetteup/conman/pkg/handler"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ import (
 func TestGetDefaultUserProfileCon(t *testing.T) {
 	type test struct {
 		name               string
-		expect             func(h *MockconfigHandler)
+		expect             func(h *game.MockHandler)
 		expectedProfileCon *config.Config
 		wantErrContains    string
 	}
@@ -24,7 +25,7 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 	tests := []test{
 		{
 			name: "successfully retrieves default user's Profile.con",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				profileNumber := "0001"
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
 					globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
@@ -41,14 +42,14 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 		},
 		{
 			name: "error if default profile detection errors",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(nil, fmt.Errorf("some-default-profile-detection-error"))
 			},
 			wantErrContains: "some-default-profile-detection-error",
 		},
 		{
 			name: "error if Profile.con read errors",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				profileNumber := "0001"
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
 					globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
@@ -63,7 +64,7 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// GIVEN
 			ctrl := gomock.NewController(t)
-			h := NewMockconfigHandler(ctrl)
+			h := game.NewMockHandler(ctrl)
 
 			// EXPECT
 			tt.expect(h)
@@ -85,7 +86,7 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 func TestGetDefaultUserProfileNumber(t *testing.T) {
 	type test struct {
 		name                  string
-		expect                func(h *MockconfigHandler)
+		expect                func(h *game.MockHandler)
 		expectedProfileNumber string
 		wantErrContains       string
 	}
@@ -93,7 +94,7 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 	tests := []test{
 		{
 			name: "successfully retrieves default user profile number",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
 					globalConKeyDefaultUserRef: *config.NewValue("0001"),
 				}), nil)
@@ -102,21 +103,21 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 		},
 		{
 			name: "error if Global.con read errors",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(nil, fmt.Errorf("some-global-con-read-error"))
 			},
 			wantErrContains: "some-global-con-read-error",
 		},
 		{
 			name: "error if default user reference is missing from Global.con",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{}), nil)
 			},
 			wantErrContains: "reference to default profile is missing from Global.con",
 		},
 		{
 			name: "error if default user reference is non-numeric",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
 					globalConKeyDefaultUserRef: *config.NewValue("abcd"),
 				}), nil)
@@ -125,7 +126,7 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 		},
 		{
 			name: "error if default user reference exceeds max length",
-			expect: func(h *MockconfigHandler) {
+			expect: func(h *game.MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
 					globalConKeyDefaultUserRef: *config.NewValue("00001"),
 				}), nil)
@@ -138,7 +139,7 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// GIVEN
 			ctrl := gomock.NewController(t)
-			h := NewMockconfigHandler(ctrl)
+			h := game.NewMockHandler(ctrl)
 
 			// EXPECT
 			tt.expect(h)

@@ -9,31 +9,31 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockfileRepository is a mock of fileRepository interface.
-type MockfileRepository struct {
+// MockFileRepository is a mock of FileRepository interface.
+type MockFileRepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockfileRepositoryMockRecorder
+	recorder *MockFileRepositoryMockRecorder
 }
 
-// MockfileRepositoryMockRecorder is the mock recorder for MockfileRepository.
-type MockfileRepositoryMockRecorder struct {
-	mock *MockfileRepository
+// MockFileRepositoryMockRecorder is the mock recorder for MockFileRepository.
+type MockFileRepositoryMockRecorder struct {
+	mock *MockFileRepository
 }
 
-// NewMockfileRepository creates a new mock instance.
-func NewMockfileRepository(ctrl *gomock.Controller) *MockfileRepository {
-	mock := &MockfileRepository{ctrl: ctrl}
-	mock.recorder = &MockfileRepositoryMockRecorder{mock}
+// NewMockFileRepository creates a new mock instance.
+func NewMockFileRepository(ctrl *gomock.Controller) *MockFileRepository {
+	mock := &MockFileRepository{ctrl: ctrl}
+	mock.recorder = &MockFileRepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockfileRepository) EXPECT() *MockfileRepositoryMockRecorder {
+func (m *MockFileRepository) EXPECT() *MockFileRepositoryMockRecorder {
 	return m.recorder
 }
 
 // ReadFile mocks base method.
-func (m *MockfileRepository) ReadFile(path string) ([]byte, error) {
+func (m *MockFileRepository) ReadFile(path string) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadFile", path)
 	ret0, _ := ret[0].([]byte)
@@ -42,7 +42,7 @@ func (m *MockfileRepository) ReadFile(path string) ([]byte, error) {
 }
 
 // ReadFile indicates an expected call of ReadFile.
-func (mr *MockfileRepositoryMockRecorder) ReadFile(path interface{}) *gomock.Call {
+func (mr *MockFileRepositoryMockRecorder) ReadFile(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadFile", reflect.TypeOf((*MockfileRepository)(nil).ReadFile), path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadFile", reflect.TypeOf((*MockFileRepository)(nil).ReadFile), path)
 }

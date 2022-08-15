@@ -20,7 +20,7 @@ const (
 	profileConFileName = "Profile.con"
 )
 
-type fileRepository interface {
+type FileRepository interface {
 	ReadFile(path string) ([]byte, error)
 }
 
@@ -33,10 +33,10 @@ func (e *ErrGameNotSupported) Error() string {
 }
 
 type Handler struct {
-	repository fileRepository
+	repository FileRepository
 }
 
-func New(repository fileRepository) *Handler {
+func New(repository FileRepository) *Handler {
 	return &Handler{
 		repository: repository,
 	}

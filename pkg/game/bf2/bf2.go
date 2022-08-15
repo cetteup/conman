@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/cetteup/conman/pkg/config"
+	"github.com/cetteup/conman/pkg/game"
 	"github.com/cetteup/conman/pkg/handler"
 )
 
@@ -17,13 +18,8 @@ const (
 	profileNumberMaxLength = 4
 )
 
-type configHandler interface {
-	ReadGlobalConfig(game handler.Game) (*config.Config, error)
-	ReadProfileConfig(game handler.Game, profile string) (*config.Config, error)
-}
-
 // Read and parse the Battlefield 2 Profile.con file for the current default profile/user
-func GetDefaultUserProfileCon(h configHandler) (*config.Config, error) {
+func GetDefaultUserProfileCon(h game.Handler) (*config.Config, error) {
 	profileNumber, err := GetDefaultUserProfileNumber(h)
 	if err != nil {
 		return nil, err
@@ -38,7 +34,7 @@ func GetDefaultUserProfileCon(h configHandler) (*config.Config, error) {
 }
 
 // Get the default user profile number by reading and parsing the Battlefield 2 Global.con file
-func GetDefaultUserProfileNumber(h configHandler) (string, error) {
+func GetDefaultUserProfileNumber(h game.Handler) (string, error) {
 	globalCon, err := h.ReadGlobalConfig(handler.GameBf2)
 	if err != nil {
 		return "", fmt.Errorf("failed to read Global.con: %s", err)
