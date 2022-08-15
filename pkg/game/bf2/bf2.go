@@ -12,8 +12,8 @@ const (
 	globalConKeyDefaultUserRef = "GlobalSettings.setDefaultUser"
 	profileConKeyGamespyNick   = "LocalProfile.setGamespyNick"
 	profileConKeyPassword      = "LocalProfile.setPassword"
-	// ProfileNumberMaxLength BF2 only uses 4 digit profile numbers
-	ProfileNumberMaxLength = 4
+	// profileNumberMaxLength BF2 only uses 4 digit profile numbers
+	profileNumberMaxLength = 4
 )
 
 type configHandler interface {
@@ -46,7 +46,7 @@ func GetDefaultUserProfileNumber(h configHandler) (string, error) {
 		return "", fmt.Errorf("reference to default profile is missing from Global.con")
 	}
 	// Since BF2 only uses 4 digits for the profile number, 16 bits is plenty to store it
-	if _, err := strconv.ParseInt(defaultUserRef.String(), 10, 16); err != nil || len(defaultUserRef.String()) > ProfileNumberMaxLength {
+	if _, err := strconv.ParseInt(defaultUserRef.String(), 10, 16); err != nil || len(defaultUserRef.String()) > profileNumberMaxLength {
 		return "", fmt.Errorf("reference to default profile in Global.con is not a valid profile number: %s", defaultUserRef.String())
 	}
 
