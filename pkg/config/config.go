@@ -1,3 +1,4 @@
+// Data structure for storing data from Refractong engine configuration files (.con)
 package config
 
 import (

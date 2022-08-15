@@ -1,3 +1,4 @@
+// Methods for working specifically with Battlefield 2 configuration files (.con)
 package bf2
 
 import (
@@ -21,6 +22,7 @@ type configHandler interface {
 	ReadProfileConfig(game handler.Game, profile string) (*config.Config, error)
 }
 
+// Read and parse the Battlefield 2 Profile.con file for the current default profile/user
 func GetDefaultUserProfileCon(h configHandler) (*config.Config, error) {
 	profileNumber, err := GetDefaultUserProfileNumber(h)
 	if err != nil {
@@ -35,6 +37,7 @@ func GetDefaultUserProfileCon(h configHandler) (*config.Config, error) {
 	return profileCon, nil
 }
 
+// Get the default user profile number by reading and parsing the Battlefield 2 Global.con file
 func GetDefaultUserProfileNumber(h configHandler) (string, error) {
 	globalCon, err := h.ReadGlobalConfig(handler.GameBf2)
 	if err != nil {
@@ -53,7 +56,7 @@ func GetDefaultUserProfileNumber(h configHandler) (string, error) {
 	return defaultUserRef.String(), nil
 }
 
-// GetEncryptedProfileConLogin Extract profile name and encrypted password from a parsed Profile.con file
+// Extract profile name and encrypted password from a parsed Battlefield 2 Profile.con file
 func GetEncryptedProfileConLogin(profileCon *config.Config) (string, string, error) {
 	nickname, err := profileCon.GetValue(profileConKeyGamespyNick)
 	// GameSpy nick property is present but empty for local/singleplayer profiles

@@ -1,3 +1,4 @@
+// Read and parse Refractor engine configuration files (.con)
 package handler
 
 import (
