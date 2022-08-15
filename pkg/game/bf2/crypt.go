@@ -11,6 +11,9 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+// CryptUnprotectData implementation adapted from https://stackoverflow.com/questions/33516053/windows-encrypted-rdp-passwords-in-golang
+// and https://git.zx2c4.com/wireguard-windows/tree/conf/dpapi/dpapi_windows.go?h=v0.5.3
+
 func EncryptProfileConPassword(plain string) (string, error) {
 	// Even though the password encrypts and decrypts perfectly fine as is, BF2 needs a NUL character at the end
 	enc, err := encrypt([]byte(plain+"\x00"), "This is the description string.")
