@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/golang/mock v1.6.0
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
 )
 
 require (
