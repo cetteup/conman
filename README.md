@@ -1,2 +1,2 @@
 # conman
-Go module for handling Refractor engine configuration files
+Go module for managing Refractor engine configuration files
