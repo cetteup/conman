@@ -222,6 +222,83 @@ func TestConfig_Delete(t *testing.T) {
 	}
 }
 
+func TestConfig_ToBytes(t *testing.T) {
+	type test struct {
+		name         string
+		givenConfig  Config
+		expectedData string
+	}
+
+	tests := []test{
+		{
+			name: "serializes config with unquoted single value",
+			givenConfig: Config{
+				content: map[string]Value{
+					"LocalProfile.setNumTimesLoggedIn": {content: "8"},
+				},
+			},
+			expectedData: "LocalProfile.setNumTimesLoggedIn 8",
+		},
+		{
+			name: "serializes config with quoted single value",
+			givenConfig: Config{
+				content: map[string]Value{
+					"LocalProfile.setName": {content: "\"mister249\""},
+				},
+			},
+			expectedData: "LocalProfile.setName \"mister249\"",
+		},
+		{
+			name: "serializes config with unquoted multi value",
+			givenConfig: Config{
+				content: map[string]Value{
+					"LocalProfile.setNumTimesLoggedIn": {content: "8;9;10"},
+				},
+			},
+			expectedData: "LocalProfile.setNumTimesLoggedIn 10\r\nLocalProfile.setNumTimesLoggedIn 8\r\nLocalProfile.setNumTimesLoggedIn 9",
+		},
+		{
+			name: "serializes config with quoted multi value",
+			givenConfig: Config{
+				content: map[string]Value{
+					"LocalProfile.setName": {content: "\"mister249\";\"mister250\";\"mister251\""},
+				},
+			},
+			expectedData: "LocalProfile.setName \"mister249\"\r\nLocalProfile.setName \"mister250\"\r\nLocalProfile.setName \"mister251\"",
+		},
+		{
+			name: "serializes config with server history entries",
+			givenConfig: Config{
+				content: map[string]Value{
+					"GeneralSettings.addServerHistory": {content: "\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025;\"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360"},
+				},
+			},
+			expectedData: "GeneralSettings.addServerHistory \"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025\r\nGeneralSettings.addServerHistory \"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360",
+		},
+		{
+			name: "serializes config in correct sort order",
+			givenConfig: Config{
+				content: map[string]Value{
+					"LocalProfile.setName":        {content: "\"mister249\""},
+					"LocalProfile.setNick":        {content: "\"mister249\""},
+					"LocalProfile.setGamespyNick": {content: "\"mister249\""},
+				},
+			},
+			expectedData: "LocalProfile.setGamespyNick \"mister249\"\r\nLocalProfile.setName \"mister249\"\r\nLocalProfile.setNick \"mister249\"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// WHEN
+			bytes := tt.givenConfig.ToBytes()
+
+			// THEN
+			assert.Equal(t, tt.expectedData, string(bytes))
+		})
+	}
+}
+
 func TestValue_String(t *testing.T) {
 	type test struct {
 		name           string

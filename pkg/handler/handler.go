@@ -3,6 +3,7 @@ package handler
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/cetteup/conman/pkg/config"
@@ -21,6 +22,7 @@ const (
 )
 
 type FileRepository interface {
+	WriteFile(path string, data []byte, perm os.FileMode) error
 	ReadFile(path string) ([]byte, error)
 }
 
@@ -47,7 +49,7 @@ func (h *Handler) ReadGlobalConfig(game Game) (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return h.readConfigFile(path)
+	return h.ReadConfigFile(path)
 }
 
 func (h *Handler) ReadProfileConfig(game Game, profile string) (*config.Config, error) {
@@ -55,16 +57,29 @@ func (h *Handler) ReadProfileConfig(game Game, profile string) (*config.Config, 
 	if err != nil {
 		return nil, err
 	}
-	return h.readConfigFile(path)
+	return h.ReadConfigFile(path)
 }
 
-func (h *Handler) readConfigFile(path string) (*config.Config, error) {
+func (h *Handler) ReadConfigFile(path string) (*config.Config, error) {
 	data, err := h.repository.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
 	return config.FromBytes(data), nil
+}
+
+func (h *Handler) WriteConfigFile(path string, c *config.Config) error {
+	return h.repository.WriteFile(path, c.ToBytes(), 0666)
+}
+
+func (h *Handler) BuildBasePath(game Game) (string, error) {
+	switch game {
+	case GameBf2:
+		return buildV2BasePath(bf2GameDirName)
+	default:
+		return "", &ErrGameNotSupported{game: string(game)}
+	}
 }
 
 func buildGlobalConfigPath(game Game) (string, error) {

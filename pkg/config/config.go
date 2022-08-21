@@ -3,6 +3,7 @@ package config
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -71,6 +72,24 @@ func (c *Config) Delete(key string) {
 	delete(c.content, key)
 }
 
+func (c *Config) ToBytes() []byte {
+	lines := make([]string, 0)
+
+	for key, value := range c.content {
+		// value.Slice() returns a single element slice for non-multi values, so we can safely iterate the slice even for those
+		for _, subValue := range value.slice() {
+			lines = append(lines, fmt.Sprintf("%s %s", key, subValue))
+		}
+	}
+
+	// map iteration order is pseudo-random, so sort lines alphabetically to ensure we always generate the same byte array for a given config
+	sort.Slice(lines, func(i, j int) bool {
+		return strings.Compare(lines[i], lines[j]) < 1
+	})
+
+	return []byte(strings.Join(lines, "\r\n"))
+}
+
 type Value struct {
 	content string
 }
@@ -88,8 +107,12 @@ func (v *Value) String() string {
 	return v.content
 }
 
+func (v *Value) slice() []string {
+	return strings.Split(v.content, multiValueSeparator)
+}
+
 func (v *Value) Slice() []string {
-	values := strings.Split(v.content, multiValueSeparator)
+	values := v.slice()
 	for i, item := range values {
 		if isQuotedValue(item) {
 			values[i] = strings.Trim(item, quoteChar)

@@ -4,6 +4,7 @@
 package handler
 
 import (
+	os "os"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -45,4 +46,18 @@ func (m *MockFileRepository) ReadFile(path string) ([]byte, error) {
 func (mr *MockFileRepositoryMockRecorder) ReadFile(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadFile", reflect.TypeOf((*MockFileRepository)(nil).ReadFile), path)
+}
+
+// WriteFile mocks base method.
+func (m *MockFileRepository) WriteFile(path string, data []byte, perm os.FileMode) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteFile", path, data, perm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteFile indicates an expected call of WriteFile.
+func (mr *MockFileRepositoryMockRecorder) WriteFile(path, data, perm interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteFile", reflect.TypeOf((*MockFileRepository)(nil).WriteFile), path, data, perm)
 }

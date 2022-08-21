@@ -3,6 +3,7 @@
 package handler
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -106,6 +107,89 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, config.New(map[string]config.Value{}), profileConfig)
+			}
+		})
+	}
+}
+
+func TestHandler_WriteConfigFile(t *testing.T) {
+	type test struct {
+		name            string
+		givenPath       string
+		givenConfig     *config.Config
+		expect          func(repository *MockFileRepository)
+		wantErrContains string
+	}
+
+	tests := []test{
+		{
+			name:      "successfully writes config file",
+			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
+			givenConfig: config.New(map[string]config.Value{
+				"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
+			}),
+			expect: func(repository *MockFileRepository) {
+				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		// GIVEN
+		handler, mockRepository := getHandlerWithDependencies(t)
+
+		// EXPECT
+		tt.expect(mockRepository)
+
+		// WHEN
+		err := handler.WriteConfigFile(tt.givenPath, tt.givenConfig)
+
+		// THEN
+		if tt.wantErrContains != "" {
+			require.ErrorContains(t, err, tt.wantErrContains)
+		} else {
+			require.NoError(t, err)
+		}
+	}
+}
+
+func TestHandler_BuildBasePath(t *testing.T) {
+	type test struct {
+		name                     string
+		givenGame                Game
+		expectedPathFromDocument string
+		wantErrContains          string
+	}
+
+	tests := []test{
+		{
+			name:                     "builds base path for Battlefield 2",
+			givenGame:                GameBf2,
+			expectedPathFromDocument: "Battlefield 2\\Profiles",
+		},
+		{
+			name:            "error for unsupported game",
+			givenGame:       "not-a-supported-game",
+			wantErrContains: "game not supported",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			handler, _ := getHandlerWithDependencies(t)
+			documentsDirPath, err := windows.KnownFolderPath(windows.FOLDERID_Documents, windows.KF_FLAG_DEFAULT)
+			require.NoError(t, err)
+
+			// WHEN
+			basePath, err := handler.BuildBasePath(tt.givenGame)
+
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, filepath.Join(documentsDirPath, tt.expectedPathFromDocument), basePath)
 			}
 		})
 	}
