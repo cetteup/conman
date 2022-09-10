@@ -24,7 +24,9 @@ const (
 	ProfileConfigFileServerSettingsCon ProfileConfigFile = "ServerSettings.con"
 	ProfileConfigFileVideoCon          ProfileConfigFile = "Video.con"
 
+	defaultProfileKey          = "Default"
 	globalConKeyDefaultUserRef = "GlobalSettings.setDefaultUser"
+	profileConKeyName          = "LocalProfile.setName"
 	profileConKeyGamespyNick   = "LocalProfile.setGamespyNick"
 	profileConKeyPassword      = "LocalProfile.setPassword"
 	// profileNumberMaxLength BF2 only uses 4 digit profile numbers
@@ -47,6 +49,38 @@ func ReadProfileConfigFile(h game.Handler, profile string, configFile ProfileCon
 	}
 
 	return conFile, filePath, nil
+}
+
+func GetProfiles(h game.Handler) ([]game.Profile, error) {
+	profileKeys, err := h.GetProfileKeys(handler.GameBf2)
+	if err != nil {
+		return nil, err
+	}
+
+	var profiles []game.Profile
+	for _, profileKey := range profileKeys {
+		// Ignore the default profile
+		if profileKey == defaultProfileKey {
+			continue
+		}
+
+		profileCon, err := h.ReadProfileConfig(handler.GameBf2, profileKey)
+		if err != nil {
+			return nil, err
+		}
+
+		profileName, err := profileCon.GetValue(profileConKeyName)
+		if err != nil {
+			return nil, err
+		}
+
+		profiles = append(profiles, game.Profile{
+			Key:  profileKey,
+			Name: profileName.String(),
+		})
+	}
+
+	return profiles, nil
 }
 
 // Read and parse the Battlefield 2 Profile.con file for the current default profile/user

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/cetteup/conman/pkg/config"
+	"github.com/cetteup/conman/pkg/game"
 	"github.com/cetteup/conman/pkg/handler"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -83,6 +84,95 @@ func TestReadProfileConfigFile(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tt.wantConfig, readConfig)
 				assert.Equal(t, tt.wantConfigPath, readConfigPath)
+			}
+		})
+	}
+}
+
+func TestGetProfiles(t *testing.T) {
+	type test struct {
+		name            string
+		expect          func(h *MockHandler)
+		wantProfiles    []game.Profile
+		wantErrContains string
+	}
+
+	tests := []test{
+		{
+			name: "successfully gets profiles",
+			expect: func(h *MockHandler) {
+				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001"}, nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(map[string]config.Value{
+					profileConKeyName: *config.NewValue("some-profile"),
+				}), nil)
+			},
+			wantProfiles: []game.Profile{
+				{
+					Key:  "0001",
+					Name: "some-profile",
+				},
+			},
+		},
+		{
+			name: "ignores default profile",
+			expect: func(h *MockHandler) {
+				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001", defaultProfileKey}, nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(map[string]config.Value{
+					profileConKeyName: *config.NewValue("some-profile"),
+				}), nil)
+			},
+			wantProfiles: []game.Profile{
+				{
+					Key:  "0001",
+					Name: "some-profile",
+				},
+			},
+		},
+		{
+			name: "error getting profile keys",
+			expect: func(h *MockHandler) {
+				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{}, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
+			name: "error reading profile's Profile.con",
+			expect: func(h *MockHandler) {
+				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001"}, nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(nil, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
+			name: "error for Profile.con not containing profile name",
+			expect: func(h *MockHandler) {
+				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001"}, nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(map[string]config.Value{
+					"some-other-key": *config.NewValue("some-other-value"),
+				}), nil)
+			},
+			wantErrContains: "no such key in config",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			ctrl := gomock.NewController(t)
+			h := NewMockHandler(ctrl)
+
+			// EXPECT
+			tt.expect(h)
+
+			// WHEN
+			profiles, err := GetProfiles(h)
+
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.wantProfiles, profiles)
 			}
 		})
 	}
