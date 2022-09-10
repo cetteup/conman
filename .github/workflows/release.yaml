@@ -8,6 +8,7 @@ jobs:
   releases-matrix:
     name: release bf2-conman go binary
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/bf2-conman-')
     strategy:
       matrix:
         goos: [windows]
