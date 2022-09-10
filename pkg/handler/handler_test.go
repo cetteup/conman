@@ -3,6 +3,7 @@
 package handler
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,7 +42,7 @@ func TestHandler_ReadGlobalConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// GIVEN
-			handler, mockRepository := getHandlerWithDependencies(t)
+			_, handler, mockRepository := getHandlerWithDependencies(t)
 			documentsDirPath, err := windows.KnownFolderPath(windows.FOLDERID_Documents, windows.KF_FLAG_DEFAULT)
 			require.NoError(t, err)
 
@@ -57,6 +58,104 @@ func TestHandler_ReadGlobalConfig(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, config.New(map[string]config.Value{}), globalConfig)
+			}
+		})
+	}
+}
+
+func TestHandler_GetProfileKeys(t *testing.T) {
+	type test struct {
+		name            string
+		givenGame       Game
+		expect          func(ctrl *gomock.Controller, repository *MockFileRepository, documentsDirPath string)
+		wantProfileKeys []string
+		wantErrContains string
+	}
+
+	tests := []test{
+		{
+			name:      "successfully gets profile keys",
+			givenGame: GameBf2,
+			expect: func(ctrl *gomock.Controller, repository *MockFileRepository, documentsDirPath string) {
+				dirEntry := NewMockDirEntry(ctrl)
+				dirEntry.EXPECT().IsDir().Return(true)
+				dirEntry.EXPECT().Name().Return("0001").Times(2)
+				fileEntry := NewMockDirEntry(ctrl)
+				fileEntry.EXPECT().IsDir().Return(false)
+				repository.EXPECT().ReadDir(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName))).Return([]os.DirEntry{
+					dirEntry,
+					fileEntry,
+				}, nil)
+				repository.EXPECT().FileExists(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return(true, nil)
+			},
+			wantProfileKeys: []string{
+				"0001",
+			},
+		},
+		{
+			name:      "ignores profile dir which does not contain Profile.con",
+			givenGame: GameBf2,
+			expect: func(ctrl *gomock.Controller, repository *MockFileRepository, documentsDirPath string) {
+				dirEntry := NewMockDirEntry(ctrl)
+				dirEntry.EXPECT().IsDir().Return(true)
+				dirEntry.EXPECT().Name().Return("0001").Times(2)
+				invalidDirEntry := NewMockDirEntry(ctrl)
+				invalidDirEntry.EXPECT().IsDir().Return(true)
+				invalidDirEntry.EXPECT().Name().Return("0002")
+				repository.EXPECT().ReadDir(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName))).Return([]os.DirEntry{
+					dirEntry,
+					invalidDirEntry,
+				}, nil)
+				repository.EXPECT().FileExists(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return(true, nil)
+				repository.EXPECT().FileExists(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0002", profileConFileName))).Return(false, nil)
+			},
+			wantProfileKeys: []string{
+				"0001",
+			},
+		},
+		{
+			name:      "error listing profile dir entries",
+			givenGame: GameBf2,
+			expect: func(ctrl *gomock.Controller, repository *MockFileRepository, documentsDirPath string) {
+				repository.EXPECT().ReadDir(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName))).Return([]os.DirEntry{}, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
+			name:      "error checking if profile dir is valid",
+			givenGame: GameBf2,
+			expect: func(ctrl *gomock.Controller, repository *MockFileRepository, documentsDirPath string) {
+				dirEntry := NewMockDirEntry(ctrl)
+				dirEntry.EXPECT().IsDir().Return(true)
+				dirEntry.EXPECT().Name().Return("0001").Times(1)
+				repository.EXPECT().ReadDir(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName))).Return([]os.DirEntry{
+					dirEntry,
+				}, nil)
+				repository.EXPECT().FileExists(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return(false, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			ctrl, handler, mockRepository := getHandlerWithDependencies(t)
+			documentsDirPath, err := windows.KnownFolderPath(windows.FOLDERID_Documents, windows.KF_FLAG_DEFAULT)
+			require.NoError(t, err)
+
+			// EXPECT
+			tt.expect(ctrl, mockRepository, documentsDirPath)
+
+			// WHEN
+			profileKeys, err := handler.GetProfileKeys(tt.givenGame)
+
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.wantProfileKeys, profileKeys)
 			}
 		})
 	}
@@ -91,7 +190,7 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// GIVEN
-			handler, mockRepository := getHandlerWithDependencies(t)
+			_, handler, mockRepository := getHandlerWithDependencies(t)
 			documentsDirPath, err := windows.KnownFolderPath(windows.FOLDERID_Documents, windows.KF_FLAG_DEFAULT)
 			require.NoError(t, err)
 
@@ -136,7 +235,7 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 
 	for _, tt := range tests {
 		// GIVEN
-		handler, mockRepository := getHandlerWithDependencies(t)
+		_, handler, mockRepository := getHandlerWithDependencies(t)
 
 		// EXPECT
 		tt.expect(mockRepository)
@@ -177,7 +276,7 @@ func TestHandler_BuildBasePath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// GIVEN
-			handler, _ := getHandlerWithDependencies(t)
+			_, handler, _ := getHandlerWithDependencies(t)
 			documentsDirPath, err := windows.KnownFolderPath(windows.FOLDERID_Documents, windows.KF_FLAG_DEFAULT)
 			require.NoError(t, err)
 
@@ -195,8 +294,8 @@ func TestHandler_BuildBasePath(t *testing.T) {
 	}
 }
 
-func getHandlerWithDependencies(t *testing.T) (*Handler, *MockFileRepository) {
+func getHandlerWithDependencies(t *testing.T) (*gomock.Controller, *Handler, *MockFileRepository) {
 	ctrl := gomock.NewController(t)
 	mockRepository := NewMockFileRepository(ctrl)
-	return New(mockRepository), mockRepository
+	return ctrl, New(mockRepository), mockRepository
 }

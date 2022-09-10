@@ -33,6 +33,36 @@ func (m *MockFileRepository) EXPECT() *MockFileRepositoryMockRecorder {
 	return m.recorder
 }
 
+// FileExists mocks base method.
+func (m *MockFileRepository) FileExists(path string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileExists", path)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileExists indicates an expected call of FileExists.
+func (mr *MockFileRepositoryMockRecorder) FileExists(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileExists", reflect.TypeOf((*MockFileRepository)(nil).FileExists), path)
+}
+
+// ReadDir mocks base method.
+func (m *MockFileRepository) ReadDir(path string) ([]os.DirEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadDir", path)
+	ret0, _ := ret[0].([]os.DirEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadDir indicates an expected call of ReadDir.
+func (mr *MockFileRepositoryMockRecorder) ReadDir(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadDir", reflect.TypeOf((*MockFileRepository)(nil).ReadDir), path)
+}
+
 // ReadFile mocks base method.
 func (m *MockFileRepository) ReadFile(path string) ([]byte, error) {
 	m.ctrl.T.Helper()

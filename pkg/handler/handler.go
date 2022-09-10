@@ -22,8 +22,10 @@ const (
 )
 
 type FileRepository interface {
+	FileExists(path string) (bool, error)
 	WriteFile(path string, data []byte, perm os.FileMode) error
 	ReadFile(path string) ([]byte, error)
+	ReadDir(path string) ([]os.DirEntry, error)
 }
 
 type ErrGameNotSupported struct {
@@ -50,6 +52,48 @@ func (h *Handler) ReadGlobalConfig(game Game) (*config.Config, error) {
 		return nil, err
 	}
 	return h.ReadConfigFile(path)
+}
+
+// Retrieve a list of profile keys (valid profile directories in the game's profile folder)
+func (h *Handler) GetProfileKeys(game Game) ([]string, error) {
+	path, err := h.BuildBasePath(game)
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := h.repository.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var profiles []string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			valid, err := h.isValidProfileDir(game, path, entry.Name())
+			if err != nil {
+				return nil, err
+			}
+			if valid {
+				profiles = append(profiles, entry.Name())
+			}
+		}
+	}
+
+	return profiles, nil
+}
+
+func (h *Handler) isValidProfileDir(game Game, basePath string, profile string) (bool, error) {
+	var conFileName string
+	switch game {
+	case GameBf2:
+		conFileName = profileConFileName
+	default:
+		return false, &ErrGameNotSupported{game: string(game)}
+	}
+
+	conFilePath := filepath.Join(basePath, profile, conFileName)
+
+	return h.repository.FileExists(conFilePath)
 }
 
 func (h *Handler) ReadProfileConfig(game Game, profile string) (*config.Config, error) {
