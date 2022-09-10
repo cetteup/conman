@@ -234,21 +234,23 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		// GIVEN
-		_, handler, mockRepository := getHandlerWithDependencies(t)
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			_, handler, mockRepository := getHandlerWithDependencies(t)
 
-		// EXPECT
-		tt.expect(mockRepository)
+			// EXPECT
+			tt.expect(mockRepository)
 
-		// WHEN
-		err := handler.WriteConfigFile(tt.givenPath, tt.givenConfig)
+			// WHEN
+			err := handler.WriteConfigFile(tt.givenPath, tt.givenConfig)
 
-		// THEN
-		if tt.wantErrContains != "" {
-			require.ErrorContains(t, err, tt.wantErrContains)
-		} else {
-			require.NoError(t, err)
-		}
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
 	}
 }
 
