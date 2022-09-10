@@ -360,7 +360,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 	}
 }
 
-func TestGetEncryptedProfileConLogin(t *testing.T) {
+func TestGetEncryptedLogin(t *testing.T) {
 	type test struct {
 		name                 string
 		prepareProfileConMap func(profileCon *config.Config)
@@ -428,7 +428,7 @@ func TestGetEncryptedProfileConLogin(t *testing.T) {
 	}
 }
 
-func TestPurgeGeneralConServerHistory(t *testing.T) {
+func TestPurgeServerHistory(t *testing.T) {
 	type test struct {
 		name               string
 		givenGeneralCon    *config.Config
