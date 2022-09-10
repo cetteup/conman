@@ -208,7 +208,7 @@ func TestGetDefaultProfileProfileCon(t *testing.T) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue(profileKey),
+						globalConKeyDefaultProfileRef: *config.NewValue(profileKey),
 					},
 				), nil)
 				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileKey).Return(config.New(
@@ -241,7 +241,7 @@ func TestGetDefaultProfileProfileCon(t *testing.T) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue(profileKey),
+						globalConKeyDefaultProfileRef: *config.NewValue(profileKey),
 					},
 				), nil)
 				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileKey).Return(nil, fmt.Errorf("some-profile-con-read-error"))
@@ -288,7 +288,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue("0001"),
+						globalConKeyDefaultProfileRef: *config.NewValue("0001"),
 					},
 				), nil)
 			},
@@ -317,7 +317,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue("abcd"),
+						globalConKeyDefaultProfileRef: *config.NewValue("abcd"),
 					},
 				), nil)
 			},
@@ -329,7 +329,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue("00001"),
+						globalConKeyDefaultProfileRef: *config.NewValue("00001"),
 					},
 				), nil)
 			},
@@ -356,6 +356,66 @@ func TestGetDefaultProfileKey(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tt.expectedProfileKey, profileKey)
 			}
+		})
+	}
+}
+
+func TestSetDefaultProfile(t *testing.T) {
+	type test struct {
+		name            string
+		givenGlobalCon  *config.Config
+		givenProfileKey string
+		wantGlobalCon   *config.Config
+	}
+
+	tests := []test{
+		{
+			name: "sets default profile in Global.con",
+			givenGlobalCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GlobalSettings.setNamePrefix": *config.NewQuotedValue("=DOG="),
+				},
+			),
+			givenProfileKey: "0001",
+			wantGlobalCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					globalConKeyDefaultProfileRef:  *config.NewQuotedValue("0001"),
+					"GlobalSettings.setNamePrefix": *config.NewQuotedValue("=DOG="),
+				},
+			),
+		},
+		{
+			name: "overwrites existing default profile in Global.con",
+			givenGlobalCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					globalConKeyDefaultProfileRef:  *config.NewQuotedValue("0001"),
+					"GlobalSettings.setNamePrefix": *config.NewQuotedValue("=DOG="),
+				},
+			),
+			givenProfileKey: "0002",
+			wantGlobalCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					globalConKeyDefaultProfileRef:  *config.NewQuotedValue("0002"),
+					"GlobalSettings.setNamePrefix": *config.NewQuotedValue("=DOG="),
+				},
+			),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			globalCon := tt.givenGlobalCon
+
+			// WHEN
+			SetDefaultProfile(globalCon, tt.givenProfileKey)
+
+			// THEN
+			assert.Equal(t, tt.wantGlobalCon, globalCon)
 		})
 	}
 }

@@ -28,7 +28,7 @@ const (
 	// profileKeyMaxLength BF2 only uses 4 digit profile keys
 	profileKeyMaxLength = 4
 
-	globalConKeyDefaultUserRef = "GlobalSettings.setDefaultUser"
+	globalConKeyDefaultProfileRef = "GlobalSettings.setDefaultUser"
 
 	profileConKeyName        = "LocalProfile.setName"
 	profileConKeyGamespyNick = "LocalProfile.setGamespyNick"
@@ -108,7 +108,7 @@ func GetDefaultProfileKey(h game.Handler) (string, error) {
 		return "", fmt.Errorf("failed to read Global.con: %s", err)
 	}
 
-	defaultUserRef, err := globalCon.GetValue(globalConKeyDefaultUserRef)
+	defaultUserRef, err := globalCon.GetValue(globalConKeyDefaultProfileRef)
 	if err != nil {
 		return "", fmt.Errorf("reference to default profile is missing from Global.con")
 	}
@@ -118,6 +118,10 @@ func GetDefaultProfileKey(h game.Handler) (string, error) {
 	}
 
 	return defaultUserRef.String(), nil
+}
+
+func SetDefaultProfile(globalCon *config.Config, profileKey string) {
+	globalCon.SetValue(globalConKeyDefaultProfileRef, *config.NewQuotedValue(profileKey))
 }
 
 // Extract profile name and encrypted password from a parsed Battlefield 2 Profile.con file
