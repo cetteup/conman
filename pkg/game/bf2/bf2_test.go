@@ -4,6 +4,7 @@ package bf2
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/cetteup/conman/pkg/config"
@@ -12,6 +13,80 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestReadProfileConfigFile(t *testing.T) {
+	type test struct {
+		name            string
+		givenProfile    string
+		givenConfigFile ProfileConfigFile
+		expect          func(h *MockHandler)
+		wantConfig      *config.Config
+		wantConfigPath  string
+		wantErrContains string
+	}
+
+	tests := []test{
+		{
+			name:            "successfully reads Profile.con",
+			givenProfile:    "0001",
+			givenConfigFile: ProfileConfigFileProfileCon,
+			expect: func(h *MockHandler) {
+				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
+				h.EXPECT().BuildBasePath(handler.GameBf2).Return(basePath, nil)
+				h.EXPECT().ReadConfigFile(filepath.Join(basePath, "0001", "Profile.con")).Return(config.New(map[string]config.Value{
+					"LocalProfile.setName": *config.NewValue("\"mister249\""),
+				}), nil)
+			},
+			wantConfig: config.New(map[string]config.Value{
+				"LocalProfile.setName": *config.NewValue("\"mister249\""),
+			}),
+			wantConfigPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+		},
+		{
+			name:            "errors if base path cannot be determined",
+			givenProfile:    "0001",
+			givenConfigFile: ProfileConfigFileProfileCon,
+			expect: func(h *MockHandler) {
+				h.EXPECT().BuildBasePath(handler.GameBf2).Return("", fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
+			name:            "errors if config file read errors",
+			givenProfile:    "0001",
+			givenConfigFile: ProfileConfigFileProfileCon,
+			expect: func(h *MockHandler) {
+				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
+				h.EXPECT().BuildBasePath(handler.GameBf2).Return(basePath, nil)
+				h.EXPECT().ReadConfigFile(filepath.Join(basePath, "0001", "Profile.con")).Return(nil, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			ctrl := gomock.NewController(t)
+			h := NewMockHandler(ctrl)
+
+			// EXPECT
+			tt.expect(h)
+
+			// WHEN
+			readConfig, readConfigPath, err := ReadProfileConfigFile(h, tt.givenProfile, tt.givenConfigFile)
+
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.wantConfig, readConfig)
+				assert.Equal(t, tt.wantConfigPath, readConfigPath)
+			}
+		})
+	}
+}
 
 func TestGetDefaultUserProfileCon(t *testing.T) {
 	type test struct {

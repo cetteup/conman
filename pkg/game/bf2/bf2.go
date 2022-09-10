@@ -3,6 +3,7 @@ package bf2
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 
 	"github.com/cetteup/conman/pkg/config"
@@ -10,7 +11,19 @@ import (
 	"github.com/cetteup/conman/pkg/handler"
 )
 
+type ProfileConfigFile string
+
 const (
+	ProfileConfigFileAudioCon          ProfileConfigFile = "Audio.con"
+	ProfileConfigFileControlsCon       ProfileConfigFile = "Controls.con"
+	ProfileConfigFileDemoBookmarksCon  ProfileConfigFile = "DemoBookmarks.con"
+	ProfileConfigFileGeneralCon        ProfileConfigFile = "General.con"
+	ProfileConfigFileHapticCon         ProfileConfigFile = "Haptic.con"
+	ProfileConfigFileMapListCon        ProfileConfigFile = "mapList.con"
+	ProfileConfigFileProfileCon        ProfileConfigFile = "Profile.con"
+	ProfileConfigFileServerSettingsCon ProfileConfigFile = "ServerSettings.con"
+	ProfileConfigFileVideoCon          ProfileConfigFile = "Video.con"
+
 	globalConKeyDefaultUserRef = "GlobalSettings.setDefaultUser"
 	profileConKeyGamespyNick   = "LocalProfile.setGamespyNick"
 	profileConKeyPassword      = "LocalProfile.setPassword"
@@ -19,6 +32,22 @@ const (
 
 	generalConKeyServerHistory = "GeneralSettings.addServerHistory"
 )
+
+// Read a config file from the given Battlefield 2 profile
+func ReadProfileConfigFile(h game.Handler, profile string, configFile ProfileConfigFile) (*config.Config, string, error) {
+	basePath, err := h.BuildBasePath(handler.GameBf2)
+	if err != nil {
+		return nil, "", err
+	}
+
+	filePath := filepath.Join(basePath, profile, string(configFile))
+	conFile, err := h.ReadConfigFile(filePath)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return conFile, filePath, nil
+}
 
 // Read and parse the Battlefield 2 Profile.con file for the current default profile/user
 func GetDefaultUserProfileCon(h game.Handler) (*config.Config, error) {
