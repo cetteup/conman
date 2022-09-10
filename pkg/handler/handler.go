@@ -96,6 +96,22 @@ func (h *Handler) isValidProfileDir(game Game, basePath string, profileKey strin
 	return h.repository.FileExists(conFilePath)
 }
 
+// Checks whether a given profile key is valid (a profile with the given key exists)
+func (h *Handler) IsValidProfileKey(game Game, profileKey string) (bool, error) {
+	profileKeys, err := h.GetProfileKeys(game)
+	if err != nil {
+		return false, err
+	}
+
+	for _, pk := range profileKeys {
+		if profileKey == pk {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (h *Handler) ReadProfileConfig(game Game, profileKey string) (*config.Config, error) {
 	path, err := buildProfileConfigPath(game, profileKey)
 	if err != nil {
