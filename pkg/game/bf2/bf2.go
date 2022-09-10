@@ -39,13 +39,13 @@ const (
 )
 
 // Read a config file from the given Battlefield 2 profile
-func ReadProfileConfigFile(h game.Handler, profile string, configFile ProfileConfigFile) (*config.Config, error) {
+func ReadProfileConfigFile(h game.Handler, profileKey string, configFile ProfileConfigFile) (*config.Config, error) {
 	basePath, err := h.BuildBasePath(handler.GameBf2)
 	if err != nil {
 		return nil, err
 	}
 
-	filePath := filepath.Join(basePath, profile, string(configFile))
+	filePath := filepath.Join(basePath, profileKey, string(configFile))
 	conFile, err := h.ReadConfigFile(filePath)
 	if err != nil {
 		return nil, err
@@ -88,14 +88,14 @@ func GetProfiles(h game.Handler) ([]game.Profile, error) {
 
 // Read and parse the Battlefield 2 Profile.con file for the current default profile
 func GetDefaultProfileProfileCon(h game.Handler) (*config.Config, error) {
-	profileNumber, err := GetDefaultProfileKey(h)
+	profileKey, err := GetDefaultProfileKey(h)
 	if err != nil {
 		return nil, err
 	}
 
-	profileCon, err := h.ReadProfileConfig(handler.GameBf2, profileNumber)
+	profileCon, err := h.ReadProfileConfig(handler.GameBf2, profileKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read Profile.con for current default profile (%s): %s", profileNumber, err)
+		return nil, fmt.Errorf("failed to read Profile.con for current default profile (%s): %s", profileKey, err)
 	}
 
 	return profileCon, nil
@@ -112,9 +112,9 @@ func GetDefaultProfileKey(h game.Handler) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("reference to default profile is missing from Global.con")
 	}
-	// Since BF2 only uses 4 digits for the profile number, 16 bits is plenty to store it
+	// Since BF2 only uses 4 digits for the profile key, 16 bits is plenty to store it
 	if _, err := strconv.ParseInt(defaultUserRef.String(), 10, 16); err != nil || len(defaultUserRef.String()) > profileKeyMaxLength {
-		return "", fmt.Errorf("reference to default profile in Global.con is not a valid profile number: %s", defaultUserRef.String())
+		return "", fmt.Errorf("reference to default profile in Global.con is not a valid profile key: %s", defaultUserRef.String())
 	}
 
 	return defaultUserRef.String(), nil

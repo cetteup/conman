@@ -173,24 +173,24 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 	type test struct {
 		name            string
 		givenGame       Game
-		givenProfile    string
+		givenProfileKey string
 		expect          func(repository *MockFileRepository, documentsDirPath string)
 		wantErrContains string
 	}
 
 	tests := []test{
 		{
-			name:         "successfully reads config file",
-			givenGame:    GameBf2,
-			givenProfile: "0001",
+			name:            "successfully reads config file",
+			givenGame:       GameBf2,
+			givenProfileKey: "0001",
 			expect: func(repository *MockFileRepository, documentsDirPath string) {
 				repository.EXPECT().ReadFile(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return([]byte{}, nil)
 			},
 		},
 		{
-			name:         "error reading config file",
-			givenGame:    GameBf2,
-			givenProfile: "0001",
+			name:            "error reading config file",
+			givenGame:       GameBf2,
+			givenProfileKey: "0001",
 			expect: func(repository *MockFileRepository, documentsDirPath string) {
 				repository.EXPECT().ReadFile(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return([]byte{}, fmt.Errorf("some-error"))
 			},
@@ -215,7 +215,7 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 			tt.expect(mockRepository, documentsDirPath)
 
 			// WHEN
-			profileConfig, err := handler.ReadProfileConfig(tt.givenGame, tt.givenProfile)
+			profileConfig, err := handler.ReadProfileConfig(tt.givenGame, tt.givenProfileKey)
 
 			// THEN
 			if tt.wantErrContains != "" {

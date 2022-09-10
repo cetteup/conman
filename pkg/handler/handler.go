@@ -66,7 +66,7 @@ func (h *Handler) GetProfileKeys(game Game) ([]string, error) {
 		return nil, err
 	}
 
-	var profiles []string
+	var profileKeys []string
 	for _, entry := range entries {
 		if entry.IsDir() {
 			valid, err := h.isValidProfileDir(game, path, entry.Name())
@@ -74,15 +74,15 @@ func (h *Handler) GetProfileKeys(game Game) ([]string, error) {
 				return nil, err
 			}
 			if valid {
-				profiles = append(profiles, entry.Name())
+				profileKeys = append(profileKeys, entry.Name())
 			}
 		}
 	}
 
-	return profiles, nil
+	return profileKeys, nil
 }
 
-func (h *Handler) isValidProfileDir(game Game, basePath string, profile string) (bool, error) {
+func (h *Handler) isValidProfileDir(game Game, basePath string, profileKey string) (bool, error) {
 	var conFileName string
 	switch game {
 	case GameBf2:
@@ -91,13 +91,13 @@ func (h *Handler) isValidProfileDir(game Game, basePath string, profile string) 
 		return false, &ErrGameNotSupported{game: string(game)}
 	}
 
-	conFilePath := filepath.Join(basePath, profile, conFileName)
+	conFilePath := filepath.Join(basePath, profileKey, conFileName)
 
 	return h.repository.FileExists(conFilePath)
 }
 
-func (h *Handler) ReadProfileConfig(game Game, profile string) (*config.Config, error) {
-	path, err := buildProfileConfigPath(game, profile)
+func (h *Handler) ReadProfileConfig(game Game, profileKey string) (*config.Config, error) {
+	path, err := buildProfileConfigPath(game, profileKey)
 	if err != nil {
 		return nil, err
 	}
@@ -143,21 +143,21 @@ func buildV2GlobalConfigPath(gameDirName string) (string, error) {
 	return filepath.Join(basePath, globalConFileName), nil
 }
 
-func buildProfileConfigPath(game Game, profile string) (string, error) {
+func buildProfileConfigPath(game Game, profileKey string) (string, error) {
 	switch game {
 	case GameBf2:
-		return buildV2ProfileConfigPath(bf2GameDirName, profile)
+		return buildV2ProfileConfigPath(bf2GameDirName, profileKey)
 	default:
 		return "", &ErrGameNotSupported{game: string(game)}
 	}
 }
 
-func buildV2ProfileConfigPath(gameDirName string, profile string) (string, error) {
+func buildV2ProfileConfigPath(gameDirName string, profileKey string) (string, error) {
 	basePath, err := buildV2BasePath(gameDirName)
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(basePath, profile, profileConFileName), nil
+	return filepath.Join(basePath, profileKey, profileConFileName), nil
 }
 
 func buildV2BasePath(gameDirName string) (string, error) {

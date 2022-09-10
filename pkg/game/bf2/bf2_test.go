@@ -19,7 +19,7 @@ import (
 func TestReadProfileConfigFile(t *testing.T) {
 	type test struct {
 		name            string
-		givenProfile    string
+		givenProfileKey string
 		givenConfigFile ProfileConfigFile
 		expect          func(h *MockHandler)
 		wantConfig      *config.Config
@@ -29,7 +29,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 	tests := []test{
 		{
 			name:            "successfully reads Profile.con",
-			givenProfile:    "0001",
+			givenProfileKey: "0001",
 			givenConfigFile: ProfileConfigFileProfileCon,
 			expect: func(h *MockHandler) {
 				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
@@ -51,7 +51,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 		},
 		{
 			name:            "errors if base path cannot be determined",
-			givenProfile:    "0001",
+			givenProfileKey: "0001",
 			givenConfigFile: ProfileConfigFileProfileCon,
 			expect: func(h *MockHandler) {
 				h.EXPECT().BuildBasePath(handler.GameBf2).Return("", fmt.Errorf("some-error"))
@@ -60,7 +60,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 		},
 		{
 			name:            "errors if config file read errors",
-			givenProfile:    "0001",
+			givenProfileKey: "0001",
 			givenConfigFile: ProfileConfigFileProfileCon,
 			expect: func(h *MockHandler) {
 				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
@@ -81,7 +81,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 			tt.expect(h)
 
 			// WHEN
-			readConfig, err := ReadProfileConfigFile(h, tt.givenProfile, tt.givenConfigFile)
+			readConfig, err := ReadProfileConfigFile(h, tt.givenProfileKey, tt.givenConfigFile)
 
 			// THEN
 			if tt.wantErrContains != "" {
@@ -204,14 +204,14 @@ func TestGetDefaultProfileProfileCon(t *testing.T) {
 		{
 			name: "successfully retrieves default user's Profile.con",
 			expect: func(h *MockHandler) {
-				profileNumber := "0001"
+				profileKey := "0001"
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
+						globalConKeyDefaultUserRef: *config.NewValue(profileKey),
 					},
 				), nil)
-				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileNumber).Return(config.New(
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileKey).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
 					map[string]config.Value{
 						profileConKeyGamespyNick: *config.NewValue("some-nick"),
@@ -237,14 +237,14 @@ func TestGetDefaultProfileProfileCon(t *testing.T) {
 		{
 			name: "error if Profile.con read errors",
 			expect: func(h *MockHandler) {
-				profileNumber := "0001"
+				profileKey := "0001"
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
 					map[string]config.Value{
-						globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
+						globalConKeyDefaultUserRef: *config.NewValue(profileKey),
 					},
 				), nil)
-				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileNumber).Return(nil, fmt.Errorf("some-profile-con-read-error"))
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileKey).Return(nil, fmt.Errorf("some-profile-con-read-error"))
 			},
 			wantErrContains: "some-profile-con-read-error",
 		},
@@ -275,15 +275,15 @@ func TestGetDefaultProfileProfileCon(t *testing.T) {
 
 func TestGetDefaultProfileKey(t *testing.T) {
 	type test struct {
-		name                  string
-		expect                func(h *MockHandler)
-		expectedProfileNumber string
-		wantErrContains       string
+		name               string
+		expect             func(h *MockHandler)
+		expectedProfileKey string
+		wantErrContains    string
 	}
 
 	tests := []test{
 		{
-			name: "successfully retrieves default user profile number",
+			name: "successfully retrieves default user profile key",
 			expect: func(h *MockHandler) {
 				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
@@ -292,7 +292,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 					},
 				), nil)
 			},
-			expectedProfileNumber: "0001",
+			expectedProfileKey: "0001",
 		},
 		{
 			name: "error if Global.con read errors",
@@ -321,7 +321,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 					},
 				), nil)
 			},
-			wantErrContains: "reference to default profile in Global.con is not a valid profile number",
+			wantErrContains: "reference to default profile in Global.con is not a valid profile key",
 		},
 		{
 			name: "error if default user reference exceeds max length",
@@ -333,7 +333,7 @@ func TestGetDefaultProfileKey(t *testing.T) {
 					},
 				), nil)
 			},
-			wantErrContains: "reference to default profile in Global.con is not a valid profile number",
+			wantErrContains: "reference to default profile in Global.con is not a valid profile key",
 		},
 	}
 
@@ -347,14 +347,14 @@ func TestGetDefaultProfileKey(t *testing.T) {
 			tt.expect(h)
 
 			// WHEN
-			profileNumber, err := GetDefaultProfileKey(h)
+			profileKey, err := GetDefaultProfileKey(h)
 
 			// THEN
 			if tt.wantErrContains != "" {
 				require.ErrorContains(t, err, tt.wantErrContains)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, tt.expectedProfileNumber, profileNumber)
+				assert.Equal(t, tt.expectedProfileKey, profileKey)
 			}
 		})
 	}
