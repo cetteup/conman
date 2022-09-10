@@ -7,7 +7,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/lxn/walk v0.0.0-20210112085537-c389da54e794
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
-	github.com/rs/zerolog v1.27.0
+	github.com/rs/zerolog v1.28.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2
 )
