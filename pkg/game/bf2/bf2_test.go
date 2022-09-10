@@ -5,6 +5,7 @@ package bf2
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/cetteup/conman/pkg/config"
@@ -435,7 +436,57 @@ func TestPurgeGeneralConServerHistory(t *testing.T) {
 			generalCon := tt.givenGeneralCon
 
 			// WHEN
-			PurgeGeneralConServerHistory(generalCon)
+			PurgeServerHistory(generalCon)
+
+			// THEN
+			assert.Equal(t, tt.expectedGeneralCon, generalCon)
+		})
+	}
+}
+
+func TestMarkAllVoiceOverHelpAsPlayed(t *testing.T) {
+	type test struct {
+		name               string
+		givenGeneralCon    *config.Config
+		expectedGeneralCon *config.Config
+	}
+
+	quoted := make([]string, 0, len(voiceOverHelpLines))
+	for _, l := range voiceOverHelpLines {
+		quoted = append(quoted, fmt.Sprintf("\"%s\"", l))
+	}
+
+	tests := []test{
+		{
+			name: "marks all voice over help lines as played in General.con",
+			givenGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+			}),
+			expectedGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				generalConKeyVoiceOverHelpPlayed:     *config.NewValue(strings.Join(quoted, ";")),
+			}),
+		},
+		{
+			name: "overwrites existing voice over help lines which are marked as played in General.con",
+			givenGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				generalConKeyVoiceOverHelpPlayed:     *config.NewValue("GeneralSettings.setPlayedVOHelp \"HUD_HELP_COMMANDER_commanderApply\";GeneralSettings.setPlayedVOHelp \"HUD_HELP_KIT_SUPPORT_inVehicle\""),
+			}),
+			expectedGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				generalConKeyVoiceOverHelpPlayed:     *config.NewValue(strings.Join(quoted, ";")),
+			}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			generalCon := tt.givenGeneralCon
+
+			// WHEN
+			MarkAllVoiceOverHelpAsPlayed(generalCon)
 
 			// THEN
 			assert.Equal(t, tt.expectedGeneralCon, generalCon)

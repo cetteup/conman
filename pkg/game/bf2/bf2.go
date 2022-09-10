@@ -32,7 +32,8 @@ const (
 	// profileNumberMaxLength BF2 only uses 4 digit profile numbers
 	profileNumberMaxLength = 4
 
-	generalConKeyServerHistory = "GeneralSettings.addServerHistory"
+	generalConKeyServerHistory       = "GeneralSettings.addServerHistory"
+	generalConKeyVoiceOverHelpPlayed = "GeneralSettings.setPlayedVOHelp"
 )
 
 // Read a config file from the given Battlefield 2 profile
@@ -133,6 +134,11 @@ func GetEncryptedProfileConLogin(profileCon *config.Config) (string, string, err
 }
 
 // Remove all server history entries (GeneralSettings.addServerHistory) from given General.con config
-func PurgeGeneralConServerHistory(generalCon *config.Config) {
+func PurgeServerHistory(generalCon *config.Config) {
 	generalCon.Delete(generalConKeyServerHistory)
+}
+
+// Add all voice over help lines as played (GeneralSettings.setPlayedVOHelp) in given General.con config
+func MarkAllVoiceOverHelpAsPlayed(generalCon *config.Config) {
+	generalCon.SetValue(generalConKeyVoiceOverHelpPlayed, *config.NewQuotedValueFromSlice(voiceOverHelpLines))
 }

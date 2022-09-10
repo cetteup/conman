@@ -100,6 +100,25 @@ func NewValue(content string) *Value {
 	}
 }
 
+func NewQuotedValue(content string) *Value {
+	return NewValue(quoteValue(content))
+}
+
+func NewValueFromSlice(content []string) *Value {
+	return &Value{
+		content: strings.Join(content, multiValueSeparator),
+	}
+}
+
+func NewQuotedValueFromSlice(content []string) *Value {
+	quoted := make([]string, 0, len(content))
+	for _, c := range content {
+		quoted = append(quoted, quoteValue(c))
+	}
+
+	return NewValueFromSlice(quoted)
+}
+
 func (v *Value) String() string {
 	if isQuotedValue(v.content) {
 		return strings.Trim(v.content, quoteChar)
@@ -124,4 +143,8 @@ func (v *Value) Slice() []string {
 // isQuotedValue Checks whether a config value is a quoted string (starts and ends with a quote character, with no other quote characters in between)
 func isQuotedValue(value string) bool {
 	return strings.HasPrefix(value, quoteChar) && strings.HasSuffix(value, quoteChar) && strings.Count(value, quoteChar) == 2
+}
+
+func quoteValue(value string) string {
+	return fmt.Sprintf("%[1]s%s%[1]s", quoteChar, value)
 }
