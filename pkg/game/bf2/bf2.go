@@ -16,6 +16,8 @@ const (
 	profileConKeyPassword      = "LocalProfile.setPassword"
 	// profileNumberMaxLength BF2 only uses 4 digit profile numbers
 	profileNumberMaxLength = 4
+
+	generalConKeyServerHistory = "GeneralSettings.addServerHistory"
 )
 
 // Read and parse the Battlefield 2 Profile.con file for the current default profile/user
@@ -65,4 +67,9 @@ func GetEncryptedProfileConLogin(profileCon *config.Config) (string, string, err
 	}
 
 	return nickname.String(), encryptedPassword.String(), nil
+}
+
+// Remove all server history entries (GeneralSettings.addServerHistory) from given General.con config
+func PurgeGeneralConServerHistory(generalCon *config.Config) {
+	generalCon.Delete(generalConKeyServerHistory)
 }

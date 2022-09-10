@@ -224,3 +224,56 @@ func TestGetEncryptedProfileConLogin(t *testing.T) {
 		})
 	}
 }
+
+func TestPurgeGeneralConServerHistory(t *testing.T) {
+	type test struct {
+		name               string
+		givenGeneralCon    *config.Config
+		expectedGeneralCon *config.Config
+	}
+
+	tests := []test{
+		{
+			name: "removes single server history from General.con",
+			givenGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				"GeneralSettings.addServerHistory":   *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025"),
+			}),
+			expectedGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+			}),
+		},
+		{
+			name: "removes multiple server history items from General.con",
+			givenGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				"GeneralSettings.addServerHistory":   *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025;\"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360"),
+			}),
+			expectedGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+			}),
+		},
+		{
+			name: "does nothing if General.con does not contain any server history items",
+			givenGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+			}),
+			expectedGeneralCon: config.New(map[string]config.Value{
+				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+			}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			generalCon := tt.givenGeneralCon
+
+			// WHEN
+			PurgeGeneralConServerHistory(generalCon)
+
+			// THEN
+			assert.Equal(t, tt.expectedGeneralCon, generalCon)
+		})
+	}
+}
