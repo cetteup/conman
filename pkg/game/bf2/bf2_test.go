@@ -23,7 +23,6 @@ func TestReadProfileConfigFile(t *testing.T) {
 		givenConfigFile ProfileConfigFile
 		expect          func(h *MockHandler)
 		wantConfig      *config.Config
-		wantConfigPath  string
 		wantErrContains string
 	}
 
@@ -34,15 +33,21 @@ func TestReadProfileConfigFile(t *testing.T) {
 			givenConfigFile: ProfileConfigFileProfileCon,
 			expect: func(h *MockHandler) {
 				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
+				profileConPath := filepath.Join(basePath, "0001", "Profile.con")
 				h.EXPECT().BuildBasePath(handler.GameBf2).Return(basePath, nil)
-				h.EXPECT().ReadConfigFile(filepath.Join(basePath, "0001", "Profile.con")).Return(config.New(map[string]config.Value{
-					"LocalProfile.setName": *config.NewValue("\"mister249\""),
-				}), nil)
+				h.EXPECT().ReadConfigFile(profileConPath).Return(config.New(
+					profileConPath,
+					map[string]config.Value{
+						"LocalProfile.setName": *config.NewValue("\"mister249\""),
+					},
+				), nil)
 			},
-			wantConfig: config.New(map[string]config.Value{
-				"LocalProfile.setName": *config.NewValue("\"mister249\""),
-			}),
-			wantConfigPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+			wantConfig: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+				map[string]config.Value{
+					"LocalProfile.setName": *config.NewValue("\"mister249\""),
+				},
+			),
 		},
 		{
 			name:            "errors if base path cannot be determined",
@@ -76,7 +81,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 			tt.expect(h)
 
 			// WHEN
-			readConfig, readConfigPath, err := ReadProfileConfigFile(h, tt.givenProfile, tt.givenConfigFile)
+			readConfig, err := ReadProfileConfigFile(h, tt.givenProfile, tt.givenConfigFile)
 
 			// THEN
 			if tt.wantErrContains != "" {
@@ -84,7 +89,6 @@ func TestReadProfileConfigFile(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, tt.wantConfig, readConfig)
-				assert.Equal(t, tt.wantConfigPath, readConfigPath)
 			}
 		})
 	}
@@ -103,9 +107,12 @@ func TestGetProfiles(t *testing.T) {
 			name: "successfully gets profiles",
 			expect: func(h *MockHandler) {
 				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001"}, nil)
-				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(map[string]config.Value{
-					profileConKeyName: *config.NewValue("some-profile"),
-				}), nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+					map[string]config.Value{
+						profileConKeyName: *config.NewValue("some-profile"),
+					},
+				), nil)
 			},
 			wantProfiles: []game.Profile{
 				{
@@ -118,9 +125,12 @@ func TestGetProfiles(t *testing.T) {
 			name: "ignores default profile",
 			expect: func(h *MockHandler) {
 				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001", defaultProfileKey}, nil)
-				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(map[string]config.Value{
-					profileConKeyName: *config.NewValue("some-profile"),
-				}), nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+					map[string]config.Value{
+						profileConKeyName: *config.NewValue("some-profile"),
+					},
+				), nil)
 			},
 			wantProfiles: []game.Profile{
 				{
@@ -148,9 +158,12 @@ func TestGetProfiles(t *testing.T) {
 			name: "error for Profile.con not containing profile name",
 			expect: func(h *MockHandler) {
 				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001"}, nil)
-				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(map[string]config.Value{
-					"some-other-key": *config.NewValue("some-other-value"),
-				}), nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+					map[string]config.Value{
+						"some-other-key": *config.NewValue("some-other-value"),
+					},
+				), nil)
 			},
 			wantErrContains: "no such key in config",
 		},
@@ -179,7 +192,7 @@ func TestGetProfiles(t *testing.T) {
 	}
 }
 
-func TestGetDefaultUserProfileCon(t *testing.T) {
+func TestGetDefaultProfileProfileCon(t *testing.T) {
 	type test struct {
 		name               string
 		expect             func(h *MockHandler)
@@ -192,18 +205,27 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 			name: "successfully retrieves default user's Profile.con",
 			expect: func(h *MockHandler) {
 				profileNumber := "0001"
-				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
-					globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
-				}), nil)
-				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileNumber).Return(config.New(map[string]config.Value{
+				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
+					map[string]config.Value{
+						globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
+					},
+				), nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileNumber).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+					map[string]config.Value{
+						profileConKeyGamespyNick: *config.NewValue("some-nick"),
+						profileConKeyPassword:    *config.NewValue("some-encrypted-password"),
+					},
+				), nil)
+			},
+			expectedProfileCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
+				map[string]config.Value{
 					profileConKeyGamespyNick: *config.NewValue("some-nick"),
 					profileConKeyPassword:    *config.NewValue("some-encrypted-password"),
-				}), nil)
-			},
-			expectedProfileCon: config.New(map[string]config.Value{
-				profileConKeyGamespyNick: *config.NewValue("some-nick"),
-				profileConKeyPassword:    *config.NewValue("some-encrypted-password"),
-			}),
+				},
+			),
 		},
 		{
 			name: "error if default profile detection errors",
@@ -216,9 +238,12 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 			name: "error if Profile.con read errors",
 			expect: func(h *MockHandler) {
 				profileNumber := "0001"
-				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
-					globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
-				}), nil)
+				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
+					map[string]config.Value{
+						globalConKeyDefaultUserRef: *config.NewValue(profileNumber),
+					},
+				), nil)
 				h.EXPECT().ReadProfileConfig(handler.GameBf2, profileNumber).Return(nil, fmt.Errorf("some-profile-con-read-error"))
 			},
 			wantErrContains: "some-profile-con-read-error",
@@ -235,7 +260,7 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 			tt.expect(h)
 
 			// WHEN
-			profileCon, err := GetDefaultUserProfileCon(h)
+			profileCon, err := GetDefaultProfileProfileCon(h)
 
 			// THEN
 			if tt.wantErrContains != "" {
@@ -248,7 +273,7 @@ func TestGetDefaultUserProfileCon(t *testing.T) {
 	}
 }
 
-func TestGetDefaultUserProfileNumber(t *testing.T) {
+func TestGetDefaultProfileKey(t *testing.T) {
 	type test struct {
 		name                  string
 		expect                func(h *MockHandler)
@@ -260,9 +285,12 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 		{
 			name: "successfully retrieves default user profile number",
 			expect: func(h *MockHandler) {
-				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
-					globalConKeyDefaultUserRef: *config.NewValue("0001"),
-				}), nil)
+				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
+					map[string]config.Value{
+						globalConKeyDefaultUserRef: *config.NewValue("0001"),
+					},
+				), nil)
 			},
 			expectedProfileNumber: "0001",
 		},
@@ -276,25 +304,34 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 		{
 			name: "error if default user reference is missing from Global.con",
 			expect: func(h *MockHandler) {
-				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{}), nil)
+				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
+					map[string]config.Value{},
+				), nil)
 			},
 			wantErrContains: "reference to default profile is missing from Global.con",
 		},
 		{
 			name: "error if default user reference is non-numeric",
 			expect: func(h *MockHandler) {
-				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
-					globalConKeyDefaultUserRef: *config.NewValue("abcd"),
-				}), nil)
+				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
+					map[string]config.Value{
+						globalConKeyDefaultUserRef: *config.NewValue("abcd"),
+					},
+				), nil)
 			},
 			wantErrContains: "reference to default profile in Global.con is not a valid profile number",
 		},
 		{
 			name: "error if default user reference exceeds max length",
 			expect: func(h *MockHandler) {
-				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(map[string]config.Value{
-					globalConKeyDefaultUserRef: *config.NewValue("00001"),
-				}), nil)
+				h.EXPECT().ReadGlobalConfig(handler.GameBf2).Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\Global.con",
+					map[string]config.Value{
+						globalConKeyDefaultUserRef: *config.NewValue("00001"),
+					},
+				), nil)
 			},
 			wantErrContains: "reference to default profile in Global.con is not a valid profile number",
 		},
@@ -310,7 +347,7 @@ func TestGetDefaultUserProfileNumber(t *testing.T) {
 			tt.expect(h)
 
 			// WHEN
-			profileNumber, err := GetDefaultUserProfileNumber(h)
+			profileNumber, err := GetDefaultProfileKey(h)
 
 			// THEN
 			if tt.wantErrContains != "" {
@@ -369,11 +406,11 @@ func TestGetEncryptedProfileConLogin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// GIVEN
 			bytes := []byte(fmt.Sprintf("%s \"mister249\"\r\n%s \"some-encrypted-password\"\r\n", profileConKeyGamespyNick, profileConKeyPassword))
-			profileCon := config.FromBytes(bytes)
+			profileCon := config.FromBytes("C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con", bytes)
 			tt.prepareProfileConMap(profileCon)
 
 			// WHEN
-			nickname, encryptedPassword, err := GetEncryptedProfileConLogin(profileCon)
+			nickname, encryptedPassword, err := GetEncryptedLogin(profileCon)
 
 			// THEN
 			if tt.wantErrContains != "" {
@@ -401,32 +438,50 @@ func TestPurgeGeneralConServerHistory(t *testing.T) {
 	tests := []test{
 		{
 			name: "removes single server history from General.con",
-			givenGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-				"GeneralSettings.addServerHistory":   *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025"),
-			}),
-			expectedGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-			}),
+			givenGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					"GeneralSettings.addServerHistory":   *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025"),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
 		},
 		{
 			name: "removes multiple server history items from General.con",
-			givenGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-				"GeneralSettings.addServerHistory":   *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025;\"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360"),
-			}),
-			expectedGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-			}),
+			givenGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					"GeneralSettings.addServerHistory":   *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025;\"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360"),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
 		},
 		{
 			name: "does nothing if General.con does not contain any server history items",
-			givenGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-			}),
-			expectedGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-			}),
+			givenGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
 		},
 	}
 
@@ -459,24 +514,36 @@ func TestMarkAllVoiceOverHelpAsPlayed(t *testing.T) {
 	tests := []test{
 		{
 			name: "marks all voice over help lines as played in General.con",
-			givenGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-			}),
-			expectedGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-				generalConKeyVoiceOverHelpPlayed:     *config.NewValue(strings.Join(quoted, ";")),
-			}),
+			givenGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					generalConKeyVoiceOverHelpPlayed:     *config.NewValue(strings.Join(quoted, ";")),
+				},
+			),
 		},
 		{
 			name: "overwrites existing voice over help lines which are marked as played in General.con",
-			givenGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-				generalConKeyVoiceOverHelpPlayed:     *config.NewValue("GeneralSettings.setPlayedVOHelp \"HUD_HELP_COMMANDER_commanderApply\";GeneralSettings.setPlayedVOHelp \"HUD_HELP_KIT_SUPPORT_inVehicle\""),
-			}),
-			expectedGeneralCon: config.New(map[string]config.Value{
-				"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
-				generalConKeyVoiceOverHelpPlayed:     *config.NewValue(strings.Join(quoted, ";")),
-			}),
+			givenGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					generalConKeyVoiceOverHelpPlayed:     *config.NewValue("GeneralSettings.setPlayedVOHelp \"HUD_HELP_COMMANDER_commanderApply\";GeneralSettings.setPlayedVOHelp \"HUD_HELP_KIT_SUPPORT_inVehicle\""),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					generalConKeyVoiceOverHelpPlayed:     *config.NewValue(strings.Join(quoted, ";")),
+				},
+			),
 		},
 	}
 

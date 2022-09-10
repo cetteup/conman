@@ -12,6 +12,7 @@ import (
 func TestConfigFromBytes(t *testing.T) {
 	type test struct {
 		name           string
+		givenPath      string
 		givenData      string
 		expectedConfig Config
 	}
@@ -19,8 +20,10 @@ func TestConfigFromBytes(t *testing.T) {
 	tests := []test{
 		{
 			name:      "parses config with unix line breaks",
+			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
 			givenData: "GlobalSettings.setDefaultUser \"0010\"\nGlobalSettings.setNamePrefix \"=PRE=\"\n",
 			expectedConfig: Config{
+				Path: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
 				content: map[string]Value{
 					"GlobalSettings.setDefaultUser": {content: "\"0010\""},
 					"GlobalSettings.setNamePrefix":  {content: "\"=PRE=\""},
@@ -29,8 +32,10 @@ func TestConfigFromBytes(t *testing.T) {
 		},
 		{
 			name:      "parses config with windows line breaks",
+			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
 			givenData: "GlobalSettings.setDefaultUser \"0010\"\r\nGlobalSettings.setNamePrefix \"=PRE=\"\r\n",
 			expectedConfig: Config{
+				Path: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
 				content: map[string]Value{
 					"GlobalSettings.setDefaultUser": {content: "\"0010\""},
 					"GlobalSettings.setNamePrefix":  {content: "\"=PRE=\""},
@@ -39,8 +44,10 @@ func TestConfigFromBytes(t *testing.T) {
 		},
 		{
 			name:      "parses multiple lines with same key",
+			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
 			givenData: "GeneralSettings.setPlayedVOHelp \"HUD_HELP_A\"\nGeneralSettings.setPlayedVOHelp \"HUD_HELP_B\"\n",
 			expectedConfig: Config{
+				Path: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
 				content: map[string]Value{
 					"GeneralSettings.setPlayedVOHelp": {content: "\"HUD_HELP_A\";\"HUD_HELP_B\""},
 				},
@@ -48,8 +55,10 @@ func TestConfigFromBytes(t *testing.T) {
 		},
 		{
 			name:      "parses empty config",
+			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
 			givenData: "",
 			expectedConfig: Config{
+				Path:    "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
 				content: map[string]Value{},
 			},
 		},
@@ -58,7 +67,7 @@ func TestConfigFromBytes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// WHEN
-			config := FromBytes([]byte(tt.givenData))
+			config := FromBytes(tt.givenPath, []byte(tt.givenData))
 
 			// THEN
 			assert.Equal(t, &tt.expectedConfig, config)

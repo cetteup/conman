@@ -65,7 +65,7 @@ func TestHandler_ReadGlobalConfig(t *testing.T) {
 				require.ErrorContains(t, err, tt.wantErrContains)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, config.New(map[string]config.Value{}), globalConfig)
+				assert.Equal(t, config.New(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, globalConFileName), map[string]config.Value{}), globalConfig)
 			}
 		})
 	}
@@ -222,7 +222,7 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 				require.ErrorContains(t, err, tt.wantErrContains)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, config.New(map[string]config.Value{}), profileConfig)
+				assert.Equal(t, config.New(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName), map[string]config.Value{}), profileConfig)
 			}
 		})
 	}
@@ -231,7 +231,6 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 func TestHandler_WriteConfigFile(t *testing.T) {
 	type test struct {
 		name            string
-		givenPath       string
 		givenConfig     *config.Config
 		expect          func(repository *MockFileRepository)
 		wantErrContains string
@@ -239,21 +238,25 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 
 	tests := []test{
 		{
-			name:      "successfully writes config file",
-			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
-			givenConfig: config.New(map[string]config.Value{
-				"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
-			}),
+			name: "successfully writes config file",
+			givenConfig: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
+				map[string]config.Value{
+					"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
+				},
+			),
 			expect: func(repository *MockFileRepository) {
 				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666)).Return(nil)
 			},
 		},
 		{
-			name:      "error writing config file",
-			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
-			givenConfig: config.New(map[string]config.Value{
-				"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
-			}),
+			name: "error writing config file",
+			givenConfig: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
+				map[string]config.Value{
+					"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
+				},
+			),
 			expect: func(repository *MockFileRepository) {
 				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666)).Return(fmt.Errorf("some-error"))
 			},
@@ -270,7 +273,7 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 			tt.expect(mockRepository)
 
 			// WHEN
-			err := handler.WriteConfigFile(tt.givenPath, tt.givenConfig)
+			err := handler.WriteConfigFile(tt.givenConfig)
 
 			// THEN
 			if tt.wantErrContains != "" {

@@ -21,16 +21,18 @@ func (e *ErrNoSuchKey) Error() string {
 }
 
 type Config struct {
+	Path    string
 	content map[string]Value
 }
 
-func New(content map[string]Value) *Config {
+func New(path string, content map[string]Value) *Config {
 	return &Config{
+		Path:    path,
 		content: content,
 	}
 }
 
-func FromBytes(data []byte) *Config {
+func FromBytes(path string, data []byte) *Config {
 	// Split on \n in order to make parsing work with either \r\n or just \n line breaks
 	lines := strings.Split(string(data), "\n")
 
@@ -52,6 +54,7 @@ func FromBytes(data []byte) *Config {
 	}
 
 	return &Config{
+		Path:    path,
 		content: parsed,
 	}
 }

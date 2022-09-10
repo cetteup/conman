@@ -110,11 +110,11 @@ func (h *Handler) ReadConfigFile(path string) (*config.Config, error) {
 		return nil, err
 	}
 
-	return config.FromBytes(data), nil
+	return config.FromBytes(path, data), nil
 }
 
-func (h *Handler) WriteConfigFile(path string, c *config.Config) error {
-	return h.repository.WriteFile(path, c.ToBytes(), 0666)
+func (h *Handler) WriteConfigFile(c *config.Config) error {
+	return h.repository.WriteFile(c.Path, c.ToBytes(), 0666)
 }
 
 func (h *Handler) BuildBasePath(game Game) (string, error) {

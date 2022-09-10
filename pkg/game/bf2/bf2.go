@@ -24,32 +24,34 @@ const (
 	ProfileConfigFileServerSettingsCon ProfileConfigFile = "ServerSettings.con"
 	ProfileConfigFileVideoCon          ProfileConfigFile = "Video.con"
 
-	defaultProfileKey          = "Default"
+	defaultProfileKey = "Default"
+	// profileKeyMaxLength BF2 only uses 4 digit profile keys
+	profileKeyMaxLength = 4
+
 	globalConKeyDefaultUserRef = "GlobalSettings.setDefaultUser"
-	profileConKeyName          = "LocalProfile.setName"
-	profileConKeyGamespyNick   = "LocalProfile.setGamespyNick"
-	profileConKeyPassword      = "LocalProfile.setPassword"
-	// profileNumberMaxLength BF2 only uses 4 digit profile numbers
-	profileNumberMaxLength = 4
+
+	profileConKeyName        = "LocalProfile.setName"
+	profileConKeyGamespyNick = "LocalProfile.setGamespyNick"
+	profileConKeyPassword    = "LocalProfile.setPassword"
 
 	generalConKeyServerHistory       = "GeneralSettings.addServerHistory"
 	generalConKeyVoiceOverHelpPlayed = "GeneralSettings.setPlayedVOHelp"
 )
 
 // Read a config file from the given Battlefield 2 profile
-func ReadProfileConfigFile(h game.Handler, profile string, configFile ProfileConfigFile) (*config.Config, string, error) {
+func ReadProfileConfigFile(h game.Handler, profile string, configFile ProfileConfigFile) (*config.Config, error) {
 	basePath, err := h.BuildBasePath(handler.GameBf2)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	filePath := filepath.Join(basePath, profile, string(configFile))
 	conFile, err := h.ReadConfigFile(filePath)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	return conFile, filePath, nil
+	return conFile, nil
 }
 
 func GetProfiles(h game.Handler) ([]game.Profile, error) {
@@ -84,9 +86,9 @@ func GetProfiles(h game.Handler) ([]game.Profile, error) {
 	return profiles, nil
 }
 
-// Read and parse the Battlefield 2 Profile.con file for the current default profile/user
-func GetDefaultUserProfileCon(h game.Handler) (*config.Config, error) {
-	profileNumber, err := GetDefaultUserProfileNumber(h)
+// Read and parse the Battlefield 2 Profile.con file for the current default profile
+func GetDefaultProfileProfileCon(h game.Handler) (*config.Config, error) {
+	profileNumber, err := GetDefaultProfileKey(h)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +101,8 @@ func GetDefaultUserProfileCon(h game.Handler) (*config.Config, error) {
 	return profileCon, nil
 }
 
-// Get the default user profile number by reading and parsing the Battlefield 2 Global.con file
-func GetDefaultUserProfileNumber(h game.Handler) (string, error) {
+// Get the default profile's key by reading and parsing the Battlefield 2 Global.con file
+func GetDefaultProfileKey(h game.Handler) (string, error) {
 	globalCon, err := h.ReadGlobalConfig(handler.GameBf2)
 	if err != nil {
 		return "", fmt.Errorf("failed to read Global.con: %s", err)
@@ -111,7 +113,7 @@ func GetDefaultUserProfileNumber(h game.Handler) (string, error) {
 		return "", fmt.Errorf("reference to default profile is missing from Global.con")
 	}
 	// Since BF2 only uses 4 digits for the profile number, 16 bits is plenty to store it
-	if _, err := strconv.ParseInt(defaultUserRef.String(), 10, 16); err != nil || len(defaultUserRef.String()) > profileNumberMaxLength {
+	if _, err := strconv.ParseInt(defaultUserRef.String(), 10, 16); err != nil || len(defaultUserRef.String()) > profileKeyMaxLength {
 		return "", fmt.Errorf("reference to default profile in Global.con is not a valid profile number: %s", defaultUserRef.String())
 	}
 
@@ -119,7 +121,7 @@ func GetDefaultUserProfileNumber(h game.Handler) (string, error) {
 }
 
 // Extract profile name and encrypted password from a parsed Battlefield 2 Profile.con file
-func GetEncryptedProfileConLogin(profileCon *config.Config) (string, string, error) {
+func GetEncryptedLogin(profileCon *config.Config) (string, string, error) {
 	nickname, err := profileCon.GetValue(profileConKeyGamespyNick)
 	// GameSpy nick property is present but empty for local/singleplayer profiles
 	if err != nil || nickname.String() == "" {
