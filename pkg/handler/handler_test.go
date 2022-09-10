@@ -32,6 +32,14 @@ func TestHandler_ReadGlobalConfig(t *testing.T) {
 			},
 		},
 		{
+			name:      "error reading config file",
+			givenGame: GameBf2,
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
+				repository.EXPECT().ReadFile(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, globalConFileName))).Return([]byte{}, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
 			name:            "error for unsupported game",
 			givenGame:       "not-a-supported-game",
 			expect:          func(repository *MockFileRepository, documentsDirPath string) {},
@@ -180,6 +188,15 @@ func TestHandler_ReadProfileConfig(t *testing.T) {
 			},
 		},
 		{
+			name:         "error reading config file",
+			givenGame:    GameBf2,
+			givenProfile: "0001",
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
+				repository.EXPECT().ReadFile(gomock.Eq(filepath.Join(documentsDirPath, bf2GameDirName, profilesDirName, "0001", profileConFileName))).Return([]byte{}, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
 			name:            "error for unsupported game",
 			givenGame:       "not-a-supported-game",
 			expect:          func(repository *MockFileRepository, documentsDirPath string) {},
@@ -228,8 +245,19 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 				"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
 			}),
 			expect: func(repository *MockFileRepository) {
-				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666))
+				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666)).Return(nil)
 			},
+		},
+		{
+			name:      "error writing config file",
+			givenPath: "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con",
+			givenConfig: config.New(map[string]config.Value{
+				"GlobalSettings.setNamePrefix": *config.NewValue("\"=DOG=\""),
+			}),
+			expect: func(repository *MockFileRepository) {
+				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666)).Return(fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
 		},
 	}
 
