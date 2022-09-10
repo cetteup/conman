@@ -246,7 +246,7 @@ func TestConfig_ToBytes(t *testing.T) {
 					"LocalProfile.setNumTimesLoggedIn": {content: "8"},
 				},
 			},
-			expectedData: "LocalProfile.setNumTimesLoggedIn 8",
+			expectedData: "LocalProfile.setNumTimesLoggedIn 8\r\n",
 		},
 		{
 			name: "serializes config with quoted single value",
@@ -255,7 +255,7 @@ func TestConfig_ToBytes(t *testing.T) {
 					"LocalProfile.setName": {content: "\"mister249\""},
 				},
 			},
-			expectedData: "LocalProfile.setName \"mister249\"",
+			expectedData: "LocalProfile.setName \"mister249\"\r\n",
 		},
 		{
 			name: "serializes config with unquoted multi value",
@@ -264,7 +264,7 @@ func TestConfig_ToBytes(t *testing.T) {
 					"LocalProfile.setNumTimesLoggedIn": {content: "8;9;10"},
 				},
 			},
-			expectedData: "LocalProfile.setNumTimesLoggedIn 10\r\nLocalProfile.setNumTimesLoggedIn 8\r\nLocalProfile.setNumTimesLoggedIn 9",
+			expectedData: "LocalProfile.setNumTimesLoggedIn 10\r\nLocalProfile.setNumTimesLoggedIn 8\r\nLocalProfile.setNumTimesLoggedIn 9\r\n",
 		},
 		{
 			name: "serializes config with quoted multi value",
@@ -273,7 +273,7 @@ func TestConfig_ToBytes(t *testing.T) {
 					"LocalProfile.setName": {content: "\"mister249\";\"mister250\";\"mister251\""},
 				},
 			},
-			expectedData: "LocalProfile.setName \"mister249\"\r\nLocalProfile.setName \"mister250\"\r\nLocalProfile.setName \"mister251\"",
+			expectedData: "LocalProfile.setName \"mister249\"\r\nLocalProfile.setName \"mister250\"\r\nLocalProfile.setName \"mister251\"\r\n",
 		},
 		{
 			name: "serializes config with server history entries",
@@ -282,7 +282,7 @@ func TestConfig_ToBytes(t *testing.T) {
 					"GeneralSettings.addServerHistory": {content: "\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025;\"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360"},
 				},
 			},
-			expectedData: "GeneralSettings.addServerHistory \"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025\r\nGeneralSettings.addServerHistory \"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360",
+			expectedData: "GeneralSettings.addServerHistory \"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\" 1025\r\nGeneralSettings.addServerHistory \"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\" 360\r\n",
 		},
 		{
 			name: "serializes config in correct sort order",
@@ -293,7 +293,7 @@ func TestConfig_ToBytes(t *testing.T) {
 					"LocalProfile.setGamespyNick": {content: "\"mister249\""},
 				},
 			},
-			expectedData: "LocalProfile.setGamespyNick \"mister249\"\r\nLocalProfile.setName \"mister249\"\r\nLocalProfile.setNick \"mister249\"",
+			expectedData: "LocalProfile.setGamespyNick \"mister249\"\r\nLocalProfile.setName \"mister249\"\r\nLocalProfile.setNick \"mister249\"\r\n",
 		},
 	}
 

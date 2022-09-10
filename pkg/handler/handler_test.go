@@ -246,7 +246,7 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 				},
 			),
 			expect: func(repository *MockFileRepository) {
-				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666)).Return(nil)
+				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\"\r\n"), os.FileMode(0666)).Return(nil)
 			},
 		},
 		{
@@ -258,7 +258,7 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 				},
 			),
 			expect: func(repository *MockFileRepository) {
-				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\""), os.FileMode(0666)).Return(fmt.Errorf("some-error"))
+				repository.EXPECT().WriteFile("C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\Global.con", []byte("GlobalSettings.setNamePrefix \"=DOG=\"\r\n"), os.FileMode(0666)).Return(fmt.Errorf("some-error"))
 			},
 			wantErrContains: "some-error",
 		},

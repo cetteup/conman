@@ -90,6 +90,9 @@ func (c *Config) ToBytes() []byte {
 		return strings.Compare(lines[i], lines[j]) < 1
 	})
 
+	// append an empty line, else BF2 will reset the configured value of the last line to default
+	lines = append(lines, "")
+
 	return []byte(strings.Join(lines, "\r\n"))
 }
 
