@@ -124,6 +124,10 @@ func PurgeShaderCache(h game.Handler) error {
 	return h.PurgeShaderCache(handler.GameBf2)
 }
 
+func PurgeLogoCache(h game.Handler) error {
+	return h.PurgeLogoCache(handler.GameBf2)
+}
+
 func SetDefaultProfile(globalCon *config.Config, profileKey string) {
 	globalCon.SetValue(globalConKeyDefaultProfileRef, *config.NewQuotedValue(profileKey))
 }

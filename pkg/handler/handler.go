@@ -18,6 +18,7 @@ const (
 	bf2GameDirName     = "Battlefield 2"
 	modsDirName        = "mods"
 	cacheDirName       = "cache"
+	logoCacheDirName   = "LogoCache"
 	profilesDirName    = "Profiles"
 	globalConFileName  = "Global.con"
 	profileConFileName = "Profile.con"
@@ -173,19 +174,52 @@ func (h *Handler) PurgeShaderCache(game Game) error {
 		Best practise is to delete all folder inside each mod's /cache directory
 	*/
 	basePath, err := h.BuildBasePath(game)
-	cacheFolders, err := h.repository.Glob(filepath.Join(basePath, modsDirName, "*", cacheDirName, "*"))
+	if err != nil {
+		return err
+	}
+	return h.globRemoveAll(filepath.Join(basePath, modsDirName, "*", cacheDirName, "*"))
+}
+
+func (h *Handler) globRemoveAll(pattern string) error {
+	matches, err := h.repository.Glob(pattern)
 	if err != nil {
 		return err
 	}
 
-	for _, cacheFolder := range cacheFolders {
-		err = h.repository.RemoveAll(cacheFolder)
+	for _, match := range matches {
+		err = h.repository.RemoveAll(match)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// Delete all cached server banner images [Refractor v2 games only]
+func (h *Handler) PurgeLogoCache(game Game) error {
+	if !isSupportedGame(game) {
+		return &ErrGameNotSupported{game: string(game)}
+	}
+	if !isRefractorV2Game(game) {
+		return &ErrActionNotSupportedForGame{
+			action: "PurgeShaderCache",
+			game:   string(game),
+		}
+	}
+
+	/*
+		Looking from the base path, the logo cache files are stored in:
+		LogoCache/
+		├──[server hosting banner image]/
+		   ├──[...path to file on server]/
+		Simply delete all folders in LogoCache/
+	*/
+	basePath, err := h.BuildBasePath(game)
+	if err != nil {
+		return err
+	}
+	return h.globRemoveAll(filepath.Join(basePath, logoCacheDirName, "*"))
 }
 
 // Build path to the root folder for given game's configuration

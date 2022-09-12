@@ -14,7 +14,7 @@ import (
 
 const (
 	windowWidth  = 300
-	windowHeight = 295
+	windowHeight = 328
 )
 
 type DropDownItem struct { // Used in the ComboBox dropdown
@@ -120,6 +120,17 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 								walk.MsgBox(mw, "Error", "Failed to purge shader cache", walk.MsgBoxIconError)
 							} else {
 								walk.MsgBox(mw, "Success", "Purged shader cache", walk.MsgBoxIconInformation)
+							}
+						},
+					},
+					declarative.PushButton{
+						Text: "Purge logo cache",
+						OnClicked: func() {
+							err := actions.PurgeLogoCache(h)
+							if err != nil {
+								walk.MsgBox(mw, "Error", "Failed to purge logo cache", walk.MsgBoxIconError)
+							} else {
+								walk.MsgBox(mw, "Success", "Purged logo cache", walk.MsgBoxIconInformation)
 							}
 						},
 					},

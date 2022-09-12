@@ -405,6 +405,51 @@ func TestPurgeShaderCache(t *testing.T) {
 	}
 }
 
+func TestPurgeLogoCache(t *testing.T) {
+	type test struct {
+		name            string
+		expect          func(h *MockHandler)
+		wantErrContains string
+	}
+
+	tests := []test{
+		{
+			name: "successfully purges logo cache",
+			expect: func(h *MockHandler) {
+				h.EXPECT().PurgeLogoCache(handler.GameBf2)
+			},
+		},
+		{
+			name: "error purging logo cache",
+			expect: func(h *MockHandler) {
+				h.EXPECT().PurgeLogoCache(handler.GameBf2).Return(fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			ctrl := gomock.NewController(t)
+			h := NewMockHandler(ctrl)
+
+			// EXPECT
+			tt.expect(h)
+
+			// WHEN
+			err := PurgeLogoCache(h)
+
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestSetDefaultProfile(t *testing.T) {
 	type test struct {
 		name            string

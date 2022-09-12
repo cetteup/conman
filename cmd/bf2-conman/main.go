@@ -28,11 +28,13 @@ func main() {
 	var doPurgeServerHistory bool
 	var doMarkAllVoiceOverHelpAsPlayed bool
 	var doPurgeShaderCache bool
+	var doPurgeLogoCache bool
 	var setDefaultProfileKey string
 	flag.BoolVar(&noGUI, "no-gui", false, "do not open/use the graphical user interface")
 	flag.BoolVar(&doPurgeServerHistory, "purge-server-history", false, "purge all server history entries from the current default profile's General.con")
 	flag.BoolVar(&doMarkAllVoiceOverHelpAsPlayed, "disable-help-voice-overs", false, "mark all help voice over lines as played for the current default profile")
 	flag.BoolVar(&doPurgeShaderCache, "purge-shader-cache", false, "purge all shader cache files and folders")
+	flag.BoolVar(&doPurgeLogoCache, "purge-logo-cache", false, "purge cached server banner images")
 	flag.StringVar(&setDefaultProfileKey, "default-profile", "", "set the given profile as the current default profile")
 	flag.Parse()
 
@@ -95,6 +97,15 @@ func main() {
 				log.Error().Err(err).Msg("Failed to purge shader cache")
 			} else {
 				log.Info().Msg("Purged shader cache")
+			}
+		}
+
+		if doPurgeLogoCache {
+			err = actions.PurgeLogoCache(h)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to purge logo cache")
+			} else {
+				log.Info().Msg("Purged logo cache")
 			}
 		}
 	}

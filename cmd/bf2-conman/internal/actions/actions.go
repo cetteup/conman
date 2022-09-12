@@ -51,3 +51,7 @@ func MarkAllVoiceOverHelpAsPlayed(h *handler.Handler, profileKey string) error {
 func PurgeShareCache(h *handler.Handler) error {
 	return bf2.PurgeShaderCache(h)
 }
+
+func PurgeLogoCache(h *handler.Handler) error {
+	return bf2.PurgeLogoCache(h)
+}

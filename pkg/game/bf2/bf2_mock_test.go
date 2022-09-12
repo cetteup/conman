@@ -64,6 +64,20 @@ func (mr *MockHandlerMockRecorder) GetProfileKeys(game interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfileKeys", reflect.TypeOf((*MockHandler)(nil).GetProfileKeys), game)
 }
 
+// PurgeLogoCache mocks base method.
+func (m *MockHandler) PurgeLogoCache(game handler.Game) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PurgeLogoCache", game)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PurgeLogoCache indicates an expected call of PurgeLogoCache.
+func (mr *MockHandlerMockRecorder) PurgeLogoCache(game interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PurgeLogoCache", reflect.TypeOf((*MockHandler)(nil).PurgeLogoCache), game)
+}
+
 // PurgeShaderCache mocks base method.
 func (m *MockHandler) PurgeShaderCache(game handler.Game) error {
 	m.ctrl.T.Helper()
