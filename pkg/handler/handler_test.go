@@ -369,6 +369,96 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 	}
 }
 
+func TestHandler_PurgeShaderCache(t *testing.T) {
+	type test struct {
+		name            string
+		givenGame       Game
+		expect          func(repository *MockFileRepository, documentsDirPath string)
+		wantErrContains string
+	}
+
+	tests := []test{
+		{
+			name:      "successfully purges shader cache",
+			givenGame: GameBf2,
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
+				basePath := filepath.Join(documentsDirPath, bf2GameDirName)
+				pattern := filepath.Join(basePath, modsDirName, "*", cacheDirName, "*")
+				bf2CachePath := filepath.Join(basePath, modsDirName, "bf2", cacheDirName, "{D7B71E3E-5F43-11CF-726F-0D3C0EC2D335}_112_1")
+				xpackCachePath := filepath.Join(basePath, modsDirName, "xpack", cacheDirName, "{D7B71E3E-5F43-11CF-726F-0D3C0EC2D335}_112_2")
+				repository.EXPECT().Glob(pattern).Return([]string{
+					bf2CachePath,
+					xpackCachePath,
+				}, nil)
+				repository.EXPECT().RemoveAll(bf2CachePath)
+				repository.EXPECT().RemoveAll(xpackCachePath)
+			},
+		},
+		{
+			name:      "does nothing if no cache folders exist",
+			givenGame: GameBf2,
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
+				basePath := filepath.Join(documentsDirPath, bf2GameDirName)
+				pattern := filepath.Join(basePath, modsDirName, "*", cacheDirName, "*")
+				repository.EXPECT().Glob(pattern).Return([]string{}, nil)
+			},
+		},
+		{
+			name:      "error in glob pattern",
+			givenGame: GameBf2,
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
+				basePath := filepath.Join(documentsDirPath, bf2GameDirName)
+				pattern := filepath.Join(basePath, modsDirName, "*", cacheDirName, "*")
+				repository.EXPECT().Glob(pattern).Return([]string{}, fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
+			name:      "error removing cache folder",
+			givenGame: GameBf2,
+			expect: func(repository *MockFileRepository, documentsDirPath string) {
+				basePath := filepath.Join(documentsDirPath, bf2GameDirName)
+				pattern := filepath.Join(basePath, modsDirName, "*", cacheDirName, "*")
+				bf2CachePath := filepath.Join(basePath, modsDirName, "bf2", cacheDirName, "{D7B71E3E-5F43-11CF-726F-0D3C0EC2D335}_112_1")
+				repository.EXPECT().Glob(pattern).Return([]string{
+					bf2CachePath,
+				}, nil)
+				repository.EXPECT().RemoveAll(bf2CachePath).Return(fmt.Errorf("some-error"))
+			},
+			wantErrContains: "some-error",
+		},
+		{
+			name:            "error for unsupported game",
+			givenGame:       "not-a-supported-game",
+			expect:          func(repository *MockFileRepository, documentsDirPath string) {},
+			wantErrContains: "game not supported",
+		},
+		// TODO Add test for supported game not suppored by this action once more games are implemented
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			_, handler, mockRepository := getHandlerWithDependencies(t)
+			documentsDirPath, err := windows.KnownFolderPath(windows.FOLDERID_Documents, windows.KF_FLAG_DEFAULT)
+			require.NoError(t, err)
+
+			// EXPECT
+			tt.expect(mockRepository, documentsDirPath)
+
+			// WHEN
+			err = handler.PurgeShaderCache(tt.givenGame)
+
+			// THEN
+			if tt.wantErrContains != "" {
+				require.ErrorContains(t, err, tt.wantErrContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestHandler_BuildProfilesFolderPath(t *testing.T) {
 	type test struct {
 		name                     string

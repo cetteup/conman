@@ -33,6 +33,21 @@ func (m *MockFileRepository) EXPECT() *MockFileRepositoryMockRecorder {
 	return m.recorder
 }
 
+// DirExists mocks base method.
+func (m *MockFileRepository) DirExists(path string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirExists", path)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirExists indicates an expected call of DirExists.
+func (mr *MockFileRepositoryMockRecorder) DirExists(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirExists", reflect.TypeOf((*MockFileRepository)(nil).DirExists), path)
+}
+
 // FileExists mocks base method.
 func (m *MockFileRepository) FileExists(path string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -46,6 +61,21 @@ func (m *MockFileRepository) FileExists(path string) (bool, error) {
 func (mr *MockFileRepositoryMockRecorder) FileExists(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileExists", reflect.TypeOf((*MockFileRepository)(nil).FileExists), path)
+}
+
+// Glob mocks base method.
+func (m *MockFileRepository) Glob(pattern string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Glob", pattern)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Glob indicates an expected call of Glob.
+func (mr *MockFileRepositoryMockRecorder) Glob(pattern interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Glob", reflect.TypeOf((*MockFileRepository)(nil).Glob), pattern)
 }
 
 // ReadDir mocks base method.
@@ -76,6 +106,20 @@ func (m *MockFileRepository) ReadFile(path string) ([]byte, error) {
 func (mr *MockFileRepositoryMockRecorder) ReadFile(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadFile", reflect.TypeOf((*MockFileRepository)(nil).ReadFile), path)
+}
+
+// RemoveAll mocks base method.
+func (m *MockFileRepository) RemoveAll(path string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveAll", path)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveAll indicates an expected call of RemoveAll.
+func (mr *MockFileRepositoryMockRecorder) RemoveAll(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAll", reflect.TypeOf((*MockFileRepository)(nil).RemoveAll), path)
 }
 
 // WriteFile mocks base method.

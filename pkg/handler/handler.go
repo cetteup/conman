@@ -16,6 +16,8 @@ const (
 	GameBf2 Game = "bf2"
 
 	bf2GameDirName     = "Battlefield 2"
+	modsDirName        = "mods"
+	cacheDirName       = "cache"
 	profilesDirName    = "Profiles"
 	globalConFileName  = "Global.con"
 	profileConFileName = "Profile.con"
@@ -23,9 +25,12 @@ const (
 
 type FileRepository interface {
 	FileExists(path string) (bool, error)
+	DirExists(path string) (bool, error)
 	WriteFile(path string, data []byte, perm os.FileMode) error
 	ReadFile(path string) ([]byte, error)
 	ReadDir(path string) ([]os.DirEntry, error)
+	Glob(pattern string) ([]string, error)
+	RemoveAll(path string) error
 }
 
 type ErrGameNotSupported struct {
@@ -34,6 +39,15 @@ type ErrGameNotSupported struct {
 
 func (e *ErrGameNotSupported) Error() string {
 	return fmt.Sprintf("game not supported: %s", e.game)
+}
+
+type ErrActionNotSupportedForGame struct {
+	game   string
+	action string
+}
+
+func (e *ErrActionNotSupportedForGame) Error() string {
+	return fmt.Sprintf("action not supported for game: %s, %s", e.action, e.game)
 }
 
 type Handler struct {
@@ -137,6 +151,43 @@ func (h *Handler) WriteConfigFile(c *config.Config) error {
 	return h.repository.WriteFile(c.Path, c.ToBytes(), 0666)
 }
 
+// Delete all shader cache (.cfx) files [Refractor v2 games only]
+func (h *Handler) PurgeShaderCache(game Game) error {
+	if !isSupportedGame(game) {
+		return &ErrGameNotSupported{game: string(game)}
+	}
+	if !isRefractorV2Game(game) {
+		return &ErrActionNotSupportedForGame{
+			action: "PurgeShaderCache",
+			game:   string(game),
+		}
+	}
+
+	/*
+		Looking from the base path, the shader cache files are stored in:
+		mods/
+		├──[mod]/
+		   ├──cache/
+			  ├──[cache dir with uuid-looking name]/
+				 ├──[cache file].cfx
+		Best practise is to delete all folder inside each mod's /cache directory
+	*/
+	basePath, err := h.BuildBasePath(game)
+	cacheFolders, err := h.repository.Glob(filepath.Join(basePath, modsDirName, "*", cacheDirName, "*"))
+	if err != nil {
+		return err
+	}
+
+	for _, cacheFolder := range cacheFolders {
+		err = h.repository.RemoveAll(cacheFolder)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Build path to the root folder for given game's configuration
 func (h *Handler) BuildBasePath(game Game) (string, error) {
 	switch game {
@@ -197,4 +248,22 @@ func buildV2BasePath(gameDirName string) (string, error) {
 	}
 
 	return filepath.Join(documentsDirPath, gameDirName), nil
+}
+
+func isSupportedGame(game Game) bool {
+	switch game {
+	case GameBf2:
+		return true
+	default:
+		return false
+	}
+}
+
+func isRefractorV2Game(game Game) bool {
+	switch game {
+	case GameBf2:
+		return true
+	default:
+		return false
+	}
 }

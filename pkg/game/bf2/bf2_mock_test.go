@@ -64,6 +64,20 @@ func (mr *MockHandlerMockRecorder) GetProfileKeys(game interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfileKeys", reflect.TypeOf((*MockHandler)(nil).GetProfileKeys), game)
 }
 
+// PurgeShaderCache mocks base method.
+func (m *MockHandler) PurgeShaderCache(game handler.Game) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PurgeShaderCache", game)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PurgeShaderCache indicates an expected call of PurgeShaderCache.
+func (mr *MockHandlerMockRecorder) PurgeShaderCache(game interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PurgeShaderCache", reflect.TypeOf((*MockHandler)(nil).PurgeShaderCache), game)
+}
+
 // ReadConfigFile mocks base method.
 func (m *MockHandler) ReadConfigFile(path string) (*config.Config, error) {
 	m.ctrl.T.Helper()
@@ -95,16 +109,16 @@ func (mr *MockHandlerMockRecorder) ReadGlobalConfig(game interface{}) *gomock.Ca
 }
 
 // ReadProfileConfig mocks base method.
-func (m *MockHandler) ReadProfileConfig(game handler.Game, profile string) (*config.Config, error) {
+func (m *MockHandler) ReadProfileConfig(game handler.Game, profileKey string) (*config.Config, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadProfileConfig", game, profile)
+	ret := m.ctrl.Call(m, "ReadProfileConfig", game, profileKey)
 	ret0, _ := ret[0].(*config.Config)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadProfileConfig indicates an expected call of ReadProfileConfig.
-func (mr *MockHandlerMockRecorder) ReadProfileConfig(game, profile interface{}) *gomock.Call {
+func (mr *MockHandlerMockRecorder) ReadProfileConfig(game, profileKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadProfileConfig", reflect.TypeOf((*MockHandler)(nil).ReadProfileConfig), game, profile)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadProfileConfig", reflect.TypeOf((*MockHandler)(nil).ReadProfileConfig), game, profileKey)
 }

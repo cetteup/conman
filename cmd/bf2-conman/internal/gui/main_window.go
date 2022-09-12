@@ -14,7 +14,7 @@ import (
 
 const (
 	windowWidth  = 300
-	windowHeight = 235
+	windowHeight = 295
 )
 
 type DropDownItem struct { // Used in the ComboBox dropdown
@@ -102,6 +102,24 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 								walk.MsgBox(mw, "Error", "Failed to disable help voice overs", walk.MsgBoxIconError)
 							} else {
 								walk.MsgBox(mw, "Success", "Disabled help voice overs", walk.MsgBoxIconInformation)
+							}
+						},
+					},
+				},
+			},
+			declarative.GroupBox{
+				Title:  "Global actions",
+				Name:   "Global actions",
+				Layout: declarative.VBox{},
+				Children: []declarative.Widget{
+					declarative.PushButton{
+						Text: "Purge shader cache",
+						OnClicked: func() {
+							err := actions.PurgeShareCache(h)
+							if err != nil {
+								walk.MsgBox(mw, "Error", "Failed to purge shader cache", walk.MsgBoxIconError)
+							} else {
+								walk.MsgBox(mw, "Success", "Purged shader cache", walk.MsgBoxIconInformation)
 							}
 						},
 					},

@@ -15,5 +15,6 @@ type Handler interface {
 	ReadGlobalConfig(game handler.Game) (*config.Config, error)
 	GetProfileKeys(game handler.Game) ([]string, error)
 	ReadProfileConfig(game handler.Game, profileKey string) (*config.Config, error)
+	PurgeShaderCache(game handler.Game) error
 	BuildBasePath(game handler.Game) (string, error)
 }

@@ -120,6 +120,10 @@ func GetDefaultProfileKey(h game.Handler) (string, error) {
 	return defaultUserRef.String(), nil
 }
 
+func PurgeShaderCache(h game.Handler) error {
+	return h.PurgeShaderCache(handler.GameBf2)
+}
+
 func SetDefaultProfile(globalCon *config.Config, profileKey string) {
 	globalCon.SetValue(globalConKeyDefaultProfileRef, *config.NewQuotedValue(profileKey))
 }
