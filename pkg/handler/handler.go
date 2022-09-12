@@ -47,7 +47,7 @@ func New(repository FileRepository) *Handler {
 }
 
 func (h *Handler) ReadGlobalConfig(game Game) (*config.Config, error) {
-	path, err := buildGlobalConfigPath(game)
+	path, err := h.buildGlobalConfigPath(game)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (h *Handler) ReadGlobalConfig(game Game) (*config.Config, error) {
 
 // Retrieve a list of profile keys (valid profile directories in the game's profile folder)
 func (h *Handler) GetProfileKeys(game Game) ([]string, error) {
-	path, err := h.BuildBasePath(game)
+	path, err := h.BuildProfilesFolderPath(game)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (h *Handler) IsValidProfileKey(game Game, profileKey string) (bool, error) 
 }
 
 func (h *Handler) ReadProfileConfig(game Game, profileKey string) (*config.Config, error) {
-	path, err := buildProfileConfigPath(game, profileKey)
+	path, err := h.buildProfileConfigPath(game, profileKey)
 	if err != nil {
 		return nil, err
 	}
@@ -133,6 +133,7 @@ func (h *Handler) WriteConfigFile(c *config.Config) error {
 	return h.repository.WriteFile(c.Path, c.ToBytes(), 0666)
 }
 
+// Build path to the root folder for given game's configuration
 func (h *Handler) BuildBasePath(game Game) (string, error) {
 	switch game {
 	case GameBf2:
@@ -142,34 +143,43 @@ func (h *Handler) BuildBasePath(game Game) (string, error) {
 	}
 }
 
-func buildGlobalConfigPath(game Game) (string, error) {
-	switch game {
-	case GameBf2:
-		return buildV2GlobalConfigPath(bf2GameDirName)
-	default:
-		return "", &ErrGameNotSupported{game: string(game)}
-	}
-}
-
-func buildV2GlobalConfigPath(gameDirName string) (string, error) {
-	basePath, err := buildV2BasePath(gameDirName)
+// Build path to the folder containing given game's profile configuration
+func (h *Handler) BuildProfilesFolderPath(game Game) (string, error) {
+	basePath, err := h.BuildBasePath(game)
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(basePath, globalConFileName), nil
+	return filepath.Join(basePath, profilesDirName), nil
 }
 
-func buildProfileConfigPath(game Game, profileKey string) (string, error) {
+func (h *Handler) buildGlobalConfigPath(game Game) (string, error) {
 	switch game {
 	case GameBf2:
-		return buildV2ProfileConfigPath(bf2GameDirName, profileKey)
+		return h.buildV2GlobalConfigPath(game)
 	default:
 		return "", &ErrGameNotSupported{game: string(game)}
 	}
 }
 
-func buildV2ProfileConfigPath(gameDirName string, profileKey string) (string, error) {
-	basePath, err := buildV2BasePath(gameDirName)
+func (h *Handler) buildV2GlobalConfigPath(game Game) (string, error) {
+	profilesPath, err := h.BuildProfilesFolderPath(game)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(profilesPath, globalConFileName), nil
+}
+
+func (h *Handler) buildProfileConfigPath(game Game, profileKey string) (string, error) {
+	switch game {
+	case GameBf2:
+		return h.buildV2ProfileConfigPath(game, profileKey)
+	default:
+		return "", &ErrGameNotSupported{game: string(game)}
+	}
+}
+
+func (h *Handler) buildV2ProfileConfigPath(game Game, profileKey string) (string, error) {
+	basePath, err := h.BuildProfilesFolderPath(game)
 	if err != nil {
 		return "", err
 	}
@@ -182,5 +192,5 @@ func buildV2BasePath(gameDirName string) (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(documentsDirPath, gameDirName, profilesDirName), nil
+	return filepath.Join(documentsDirPath, gameDirName), nil
 }

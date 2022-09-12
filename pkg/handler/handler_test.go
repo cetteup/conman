@@ -369,7 +369,7 @@ func TestHandler_WriteConfigFile(t *testing.T) {
 	}
 }
 
-func TestHandler_BuildBasePath(t *testing.T) {
+func TestHandler_BuildProfilesFolderPath(t *testing.T) {
 	type test struct {
 		name                     string
 		givenGame                Game
@@ -398,7 +398,7 @@ func TestHandler_BuildBasePath(t *testing.T) {
 			require.NoError(t, err)
 
 			// WHEN
-			basePath, err := handler.BuildBasePath(tt.givenGame)
+			basePath, err := handler.BuildProfilesFolderPath(tt.givenGame)
 
 			// THEN
 			if tt.wantErrContains != "" {
