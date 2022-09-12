@@ -46,6 +46,7 @@ func New(repository FileRepository) *Handler {
 	}
 }
 
+// Read central profile configuration file (primarily contains reference to current default profile)
 func (h *Handler) ReadGlobalConfig(game Game) (*config.Config, error) {
 	path, err := h.buildGlobalConfigPath(game)
 	if err != nil {
@@ -112,6 +113,7 @@ func (h *Handler) IsValidProfileKey(game Game, profileKey string) (bool, error) 
 	return false, nil
 }
 
+// Read the profile configuration file for the specified profile
 func (h *Handler) ReadProfileConfig(game Game, profileKey string) (*config.Config, error) {
 	path, err := h.buildProfileConfigPath(game, profileKey)
 	if err != nil {
@@ -120,6 +122,7 @@ func (h *Handler) ReadProfileConfig(game Game, profileKey string) (*config.Confi
 	return h.ReadConfigFile(path)
 }
 
+// Read the config file at given path
 func (h *Handler) ReadConfigFile(path string) (*config.Config, error) {
 	data, err := h.repository.ReadFile(path)
 	if err != nil {
@@ -129,6 +132,7 @@ func (h *Handler) ReadConfigFile(path string) (*config.Config, error) {
 	return config.FromBytes(path, data), nil
 }
 
+// Write the given config file to disk
 func (h *Handler) WriteConfigFile(c *config.Config) error {
 	return h.repository.WriteFile(c.Path, c.ToBytes(), 0666)
 }
