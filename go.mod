@@ -9,7 +9,7 @@ require (
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
 	github.com/rs/zerolog v1.28.0
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/sys v0.0.0-20220909162455-aba9fc2a8ff2
+	golang.org/x/sys v0.0.0-20220913120320-3275c407cedc
 )
 
 require (
