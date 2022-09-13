@@ -40,7 +40,7 @@ const (
 
 // Read a config file from the given Battlefield 2 profile
 func ReadProfileConfigFile(h game.Handler, profileKey string, configFile ProfileConfigFile) (*config.Config, error) {
-	basePath, err := h.BuildBasePath(handler.GameBf2)
+	basePath, err := h.BuildProfilesFolderPath(handler.GameBf2)
 	if err != nil {
 		return nil, err
 	}

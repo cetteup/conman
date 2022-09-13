@@ -34,19 +34,19 @@ func (m *MockHandler) EXPECT() *MockHandlerMockRecorder {
 	return m.recorder
 }
 
-// BuildBasePath mocks base method.
-func (m *MockHandler) BuildBasePath(game handler.Game) (string, error) {
+// BuildProfilesFolderPath mocks base method.
+func (m *MockHandler) BuildProfilesFolderPath(game handler.Game) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildBasePath", game)
+	ret := m.ctrl.Call(m, "BuildProfilesFolderPath", game)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// BuildBasePath indicates an expected call of BuildBasePath.
-func (mr *MockHandlerMockRecorder) BuildBasePath(game interface{}) *gomock.Call {
+// BuildProfilesFolderPath indicates an expected call of BuildProfilesFolderPath.
+func (mr *MockHandlerMockRecorder) BuildProfilesFolderPath(game interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildBasePath", reflect.TypeOf((*MockHandler)(nil).BuildBasePath), game)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildProfilesFolderPath", reflect.TypeOf((*MockHandler)(nil).BuildProfilesFolderPath), game)
 }
 
 // GetProfileKeys mocks base method.

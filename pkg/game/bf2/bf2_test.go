@@ -34,7 +34,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 			expect: func(h *MockHandler) {
 				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
 				profileConPath := filepath.Join(basePath, "0001", "Profile.con")
-				h.EXPECT().BuildBasePath(handler.GameBf2).Return(basePath, nil)
+				h.EXPECT().BuildProfilesFolderPath(handler.GameBf2).Return(basePath, nil)
 				h.EXPECT().ReadConfigFile(profileConPath).Return(config.New(
 					profileConPath,
 					map[string]config.Value{
@@ -54,7 +54,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 			givenProfileKey: "0001",
 			givenConfigFile: ProfileConfigFileProfileCon,
 			expect: func(h *MockHandler) {
-				h.EXPECT().BuildBasePath(handler.GameBf2).Return("", fmt.Errorf("some-error"))
+				h.EXPECT().BuildProfilesFolderPath(handler.GameBf2).Return("", fmt.Errorf("some-error"))
 			},
 			wantErrContains: "some-error",
 		},
@@ -64,7 +64,7 @@ func TestReadProfileConfigFile(t *testing.T) {
 			givenConfigFile: ProfileConfigFileProfileCon,
 			expect: func(h *MockHandler) {
 				basePath := "C:\\Users\\default\\Documents\\Battlefield 2\\Profiles"
-				h.EXPECT().BuildBasePath(handler.GameBf2).Return(basePath, nil)
+				h.EXPECT().BuildProfilesFolderPath(handler.GameBf2).Return(basePath, nil)
 				h.EXPECT().ReadConfigFile(filepath.Join(basePath, "0001", "Profile.con")).Return(nil, fmt.Errorf("some-error"))
 			},
 			wantErrContains: "some-error",
