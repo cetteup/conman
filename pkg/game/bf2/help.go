@@ -1,6 +1,7 @@
 package bf2
 
 var voiceOverHelpLines = []string{
+	"DuckInTurret",
 	"HUD_HELP_BATTLERECORDER_controlsQ",
 	"HUD_HELP_BATTLERECORDER_controlsT",
 	"HUD_HELP_COMMANDER_ARTILLERY_description",
@@ -125,4 +126,13 @@ var voiceOverHelpLines = []string{
 	"HUD_HELP_WORLD_PLAYER_RADAR_friendly",
 	"HUD_HELP_WORLD_PLAYER_UAV_TRAILER_enemy",
 	"HUD_HELP_WORLD_PLAYER_UAV_TRAILER_friendly",
+	"RURIF_AK101",
+	"USRIF_M24",
+	"air_f35b",
+	"ammokit",
+	"c4_explosives",
+	"gbrif_l96a1",
+	"medikit",
+	"switchToGuidedMissiles",
+	"ushgr_m67",
 }
