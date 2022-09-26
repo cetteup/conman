@@ -24,18 +24,18 @@ const (
 	ProfileConfigFileServerSettingsCon ProfileConfigFile = "ServerSettings.con"
 	ProfileConfigFileVideoCon          ProfileConfigFile = "Video.con"
 
-	defaultProfileKey = "Default"
+	DefaultProfileKey = "Default"
 	// profileKeyMaxLength BF2 only uses 4 digit profile keys
 	profileKeyMaxLength = 4
 
-	globalConKeyDefaultProfileRef = "GlobalSettings.setDefaultUser"
+	GlobalConKeyDefaultProfileRef = "GlobalSettings.setDefaultUser"
 
-	profileConKeyName        = "LocalProfile.setName"
-	profileConKeyGamespyNick = "LocalProfile.setGamespyNick"
-	profileConKeyPassword    = "LocalProfile.setPassword"
+	ProfileConKeyName        = "LocalProfile.setName"
+	ProfileConKeyGamespyNick = "LocalProfile.setGamespyNick"
+	ProfileConKeyPassword    = "LocalProfile.setPassword"
 
-	generalConKeyServerHistory       = "GeneralSettings.addServerHistory"
-	generalConKeyVoiceOverHelpPlayed = "GeneralSettings.setPlayedVOHelp"
+	GeneralConKeyServerHistory       = "GeneralSettings.addServerHistory"
+	GeneralConKeyVoiceOverHelpPlayed = "GeneralSettings.setPlayedVOHelp"
 )
 
 // Read a config file from the given Battlefield 2 profile
@@ -63,7 +63,7 @@ func GetProfiles(h game.Handler) ([]game.Profile, error) {
 	var profiles []game.Profile
 	for _, profileKey := range profileKeys {
 		// Ignore the default profile
-		if profileKey == defaultProfileKey {
+		if profileKey == DefaultProfileKey {
 			continue
 		}
 
@@ -72,7 +72,7 @@ func GetProfiles(h game.Handler) ([]game.Profile, error) {
 			return nil, err
 		}
 
-		profileName, err := profileCon.GetValue(profileConKeyName)
+		profileName, err := profileCon.GetValue(ProfileConKeyName)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func GetDefaultProfileKey(h game.Handler) (string, error) {
 		return "", fmt.Errorf("failed to read Global.con: %s", err)
 	}
 
-	defaultUserRef, err := globalCon.GetValue(globalConKeyDefaultProfileRef)
+	defaultUserRef, err := globalCon.GetValue(GlobalConKeyDefaultProfileRef)
 	if err != nil {
 		return "", fmt.Errorf("reference to default profile is missing from Global.con")
 	}
@@ -129,17 +129,17 @@ func PurgeLogoCache(h game.Handler) error {
 }
 
 func SetDefaultProfile(globalCon *config.Config, profileKey string) {
-	globalCon.SetValue(globalConKeyDefaultProfileRef, *config.NewQuotedValue(profileKey))
+	globalCon.SetValue(GlobalConKeyDefaultProfileRef, *config.NewQuotedValue(profileKey))
 }
 
 // Extract profile name and encrypted password from a parsed Battlefield 2 Profile.con file
 func GetEncryptedLogin(profileCon *config.Config) (string, string, error) {
-	nickname, err := profileCon.GetValue(profileConKeyGamespyNick)
+	nickname, err := profileCon.GetValue(ProfileConKeyGamespyNick)
 	// GameSpy nick property is present but empty for local/singleplayer profiles
 	if err != nil || nickname.String() == "" {
 		return "", "", fmt.Errorf("gamespy nickname is missing/empty")
 	}
-	encryptedPassword, err := profileCon.GetValue(profileConKeyPassword)
+	encryptedPassword, err := profileCon.GetValue(ProfileConKeyPassword)
 	if err != nil || encryptedPassword.String() == "" {
 		return "", "", fmt.Errorf("encrypted password is missing/empty")
 	}
@@ -149,10 +149,10 @@ func GetEncryptedLogin(profileCon *config.Config) (string, string, error) {
 
 // Remove all server history entries (GeneralSettings.addServerHistory) from given General.con config
 func PurgeServerHistory(generalCon *config.Config) {
-	generalCon.Delete(generalConKeyServerHistory)
+	generalCon.Delete(GeneralConKeyServerHistory)
 }
 
 // Add all voice over help lines as played (GeneralSettings.setPlayedVOHelp) in given General.con config
 func MarkAllVoiceOverHelpAsPlayed(generalCon *config.Config) {
-	generalCon.SetValue(generalConKeyVoiceOverHelpPlayed, *config.NewQuotedValueFromSlice(voiceOverHelpLines))
+	generalCon.SetValue(GeneralConKeyVoiceOverHelpPlayed, *config.NewQuotedValueFromSlice(voiceOverHelpLines))
 }
