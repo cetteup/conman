@@ -5,9 +5,17 @@ import (
 	"github.com/cetteup/conman/pkg/handler"
 )
 
+type ProfileType int
+
+const (
+	ProfileTypeMultiplayer ProfileType = iota
+	ProfileTypeSingleplayer
+)
+
 type Profile struct {
 	Key  string
 	Name string
+	Type ProfileType
 }
 
 type Handler interface {

@@ -106,18 +106,31 @@ func TestGetProfiles(t *testing.T) {
 		{
 			name: "successfully gets profiles",
 			expect: func(h *MockHandler) {
-				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001"}, nil)
+				h.EXPECT().GetProfileKeys(handler.GameBf2).Return([]string{"0001", "0002"}, nil)
 				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(
 					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
 					map[string]config.Value{
-						ProfileConKeyName: *config.NewValue("some-profile"),
+						ProfileConKeyName:     *config.NewValue("some-multiplayer-profile"),
+						ProfileConKeyPassword: *config.NewValue("some-password"),
+					},
+				), nil)
+				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0002").Return(config.New(
+					"C:\\Users\\Documents\\Battlefield 2\\Profiles\\0002\\Profile.con",
+					map[string]config.Value{
+						ProfileConKeyName: *config.NewValue("some-singleplayer-profile"),
 					},
 				), nil)
 			},
 			wantProfiles: []game.Profile{
 				{
 					Key:  "0001",
-					Name: "some-profile",
+					Name: "some-multiplayer-profile",
+					Type: game.ProfileTypeMultiplayer,
+				},
+				{
+					Key:  "0002",
+					Name: "some-singleplayer-profile",
+					Type: game.ProfileTypeSingleplayer,
 				},
 			},
 		},
@@ -136,6 +149,7 @@ func TestGetProfiles(t *testing.T) {
 				{
 					Key:  "0001",
 					Name: "some-profile",
+					Type: game.ProfileTypeSingleplayer,
 				},
 			},
 		},

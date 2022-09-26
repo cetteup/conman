@@ -77,9 +77,16 @@ func GetProfiles(h game.Handler) ([]game.Profile, error) {
 			return nil, err
 		}
 
+		profileType := game.ProfileTypeMultiplayer
+		// Singleplayer profiles do not contain a password
+		if !profileCon.HasKey(ProfileConKeyPassword) {
+			profileType = game.ProfileTypeSingleplayer
+		}
+
 		profiles = append(profiles, game.Profile{
 			Key:  profileKey,
 			Name: profileName.String(),
+			Type: profileType,
 		})
 	}
 
