@@ -59,6 +59,11 @@ func FromBytes(path string, data []byte) *Config {
 	}
 }
 
+func (c *Config) HasKey(key string) bool {
+	_, ok := c.content[key]
+	return ok
+}
+
 func (c *Config) GetValue(key string) (Value, error) {
 	value, ok := c.content[key]
 	if !ok {

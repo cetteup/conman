@@ -75,6 +75,48 @@ func TestConfigFromBytes(t *testing.T) {
 	}
 }
 
+func TestConfig_HasKey(t *testing.T) {
+	type test struct {
+		name        string
+		givenConfig Config
+		givenKey    string
+		wantHasKey  bool
+	}
+
+	tests := []test{
+		{
+			name: "true for existing key",
+			givenConfig: Config{
+				content: map[string]Value{
+					"some-key": {content: "some-value"},
+				},
+			},
+			givenKey:   "some-key",
+			wantHasKey: true,
+		},
+		{
+			name: "false for non-existing key",
+			givenConfig: Config{
+				content: map[string]Value{
+					"some-key": {content: "some-value"},
+				},
+			},
+			givenKey:   "some-other-key",
+			wantHasKey: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// WHEN
+			hasKey := tt.givenConfig.HasKey(tt.givenKey)
+
+			// THEN
+			assert.Equal(t, tt.wantHasKey, hasKey)
+		})
+	}
+}
+
 func TestConfig_GetValue(t *testing.T) {
 	type test struct {
 		name            string
