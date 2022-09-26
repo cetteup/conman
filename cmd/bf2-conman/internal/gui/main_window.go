@@ -14,7 +14,7 @@ import (
 
 const (
 	windowWidth  = 300
-	windowHeight = 328
+	windowHeight = 395
 )
 
 type DropDownItem struct { // Used in the ComboBox dropdown
@@ -38,6 +38,7 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 
 	var mw *walk.MainWindow
 	var profileSelection *walk.ComboBox
+	var passwordGB *walk.GroupBox
 
 	if err := (declarative.MainWindow{
 		AssignTo: &mw,
@@ -66,6 +67,14 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 				BindingMember: "Key",
 				Name:          "Select profile",
 				ToolTipText:   "Select profile",
+				OnCurrentIndexChanged: func() {
+					// Password actions cannot be used with singleplayer profiles, since those don't have passwords
+					if profiles[profileSelection.CurrentIndex()].Type == game.ProfileTypeMultiplayer {
+						passwordGB.SetEnabled(true)
+					} else {
+						passwordGB.SetEnabled(false)
+					}
+				},
 			},
 			declarative.GroupBox{
 				Title:  "Profile actions",
@@ -103,6 +112,51 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 							} else {
 								walk.MsgBox(mw, "Success", "Disabled help voice overs", walk.MsgBoxIconInformation)
 							}
+						},
+					},
+					declarative.GroupBox{
+						AssignTo: &passwordGB,
+						Title:    "Password (multiplayer profiles only)",
+						Name:     "Password",
+						Layout:   declarative.HBox{},
+						MaxSize:  declarative.Size{Width: windowWidth, Height: 60},
+						Children: []declarative.Widget{
+							declarative.Composite{
+								Layout: declarative.HBox{},
+								Children: []declarative.Widget{
+									declarative.PushButton{
+										Text: "Copy",
+										OnClicked: func() {
+											profile := profiles[profileSelection.CurrentIndex()]
+											password, err := actions.GetProfilePassword(h, profile.Key)
+											if err != nil {
+												walk.MsgBox(mw, "Error", "Failed get profile password\n\nIf the password was encrypted on another Windows installation or with another user, the password cannot be decrypted by design.\n\nYou can provide the password via the password \"Edit\" functionality or by logging in in game.", walk.MsgBoxIconError)
+												return
+											}
+											if err := walk.Clipboard().SetText(password); err != nil {
+												walk.MsgBox(mw, "Error", "Failed to copy password to clipboard", walk.MsgBoxIconError)
+												return
+											}
+											walk.MsgBox(mw, "Success", "Password copied to clipboard", walk.MsgBoxIconInformation)
+										},
+									},
+									declarative.PushButton{
+										Text: "Edit",
+										OnClicked: func() {
+											profile := profiles[profileSelection.CurrentIndex()]
+											password, err := actions.GetProfilePassword(h, profile.Key)
+											if err != nil {
+												walk.MsgBox(mw, "Error", "Failed get profile password\n\nIf the password was encrypted on another Windows installation or with another user, the password cannot be decrypted by design.\n\nYou can still update the password, but ensure you know the current password before continuing.", walk.MsgBoxIconError)
+											}
+											if cmd, err := RunPasswordEditDialog(mw, h, profile, password); err != nil {
+												walk.MsgBox(mw, "Error", "Failed to set password", walk.MsgBoxIconError)
+											} else if cmd == walk.DlgCmdOK {
+												walk.MsgBox(mw, "Success", "Password updated", walk.MsgBoxIconInformation)
+											}
+										},
+									},
+								},
+							},
 						},
 					},
 				},

@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 
+	"github.com/cetteup/conman/pkg/config"
 	"github.com/cetteup/conman/pkg/game/bf2"
 	"github.com/cetteup/conman/pkg/handler"
 )
@@ -24,6 +25,36 @@ func SetDefaultProfile(h *handler.Handler, profileKey string) error {
 	bf2.SetDefaultProfile(globalCon, profileKey)
 
 	return h.WriteConfigFile(globalCon)
+}
+
+func GetProfilePassword(h *handler.Handler, profileKey string) (string, error) {
+	profileCon, err := bf2.ReadProfileConfigFile(h, profileKey, bf2.ProfileConfigFileProfileCon)
+	if err != nil {
+		return "", err
+	}
+
+	encryptedPassword, err := profileCon.GetValue(bf2.ProfileConKeyPassword)
+	if err != nil {
+		return "", err
+	}
+
+	return bf2.DecryptProfileConPassword(encryptedPassword.String())
+}
+
+func SetProfilePassword(h *handler.Handler, profileKey string, password string) error {
+	profileCon, err := bf2.ReadProfileConfigFile(h, profileKey, bf2.ProfileConfigFileProfileCon)
+	if err != nil {
+		return err
+	}
+
+	encryptedPassword, err := bf2.EncryptProfileConPassword(password)
+	if err != nil {
+		return err
+	}
+
+	profileCon.SetValue(bf2.ProfileConKeyPassword, *config.NewValue(encryptedPassword))
+
+	return h.WriteConfigFile(profileCon)
 }
 
 func PurgeServerHistory(h *handler.Handler, profileKey string) error {
