@@ -141,4 +141,5 @@ var voiceOverHelpLines = []string{
 	"medikit",
 	"switchToGuidedMissiles",
 	"ushgr_m67",
+	"usmin_claymore",
 }
