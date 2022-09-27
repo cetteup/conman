@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/cetteup/conman/pkg/config"
 	"github.com/cetteup/conman/pkg/game"
@@ -663,6 +664,151 @@ func TestPurgeServerHistory(t *testing.T) {
 	}
 }
 
+func TestPurgeOldDemoBookmarks(t *testing.T) {
+	type test struct {
+		name                     string
+		givenDemoBookmarksCon    *config.Config
+		givenReference           time.Time
+		givenMaxAge              time.Duration
+		expectedDemoBookmarksCon *config.Config
+	}
+
+	reference := time.Date(2022, 9, 27, 12, 36, 0, 0, time.UTC)
+	tests := []test{
+		{
+			name: "only removes bookmarks older than max age",
+			givenDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						buildDemoBookmark("some-server", "strike_at_karkand", reference.Add(-time.Hour*24*7-1)),
+						buildDemoBookmark("some-other-server", "dragon_valley", reference.Add(-time.Hour*24*7+1)),
+						buildDemoBookmark("some-other-server", "road_to_jalalabad", reference.Add(-time.Hour*24*7)),
+					}),
+				},
+			),
+			givenReference: reference,
+			givenMaxAge:    time.Hour * 24 * 7,
+			expectedDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						buildDemoBookmark("some-other-server", "dragon_valley", reference.Add(-time.Hour*24*7+1)),
+						buildDemoBookmark("some-other-server", "road_to_jalalabad", reference.Add(-time.Hour*24*7)),
+					}),
+				},
+			),
+		},
+		{
+			name: "deletes bookmarks key if no entries are kept",
+			givenDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						buildDemoBookmark("some-server", "strike_at_karkand", reference.Add(-time.Hour*24*7-1)),
+					}),
+				},
+			),
+			givenReference: reference,
+			givenMaxAge:    time.Hour * 24 * 7,
+			expectedDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{},
+			),
+		},
+		{
+			name: "handles unquoted single-word values",
+			givenDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						fmt.Sprintf("first-server \"strike_at_karkand\" \"http://unused/first-server/strike_at_karkand/some-demo.bf2demo\" \"%s\"", formatDemoBookmarkTimestamp(reference)),
+						fmt.Sprintf("\"second-server\" dragon_valley \"http://unused/second-server/dragon_valley/some-demo.bf2demo\" \"%s\"", formatDemoBookmarkTimestamp(reference)),
+						fmt.Sprintf("\"third-server\" \"dragon_valley\" http://unused/second-server/dragon_valley/some-demo.bf2demo \"%s\"", formatDemoBookmarkTimestamp(reference)),
+					}),
+				},
+			),
+			givenReference: reference,
+			givenMaxAge:    time.Hour * 24 * 7,
+			expectedDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						fmt.Sprintf("first-server \"strike_at_karkand\" \"http://unused/first-server/strike_at_karkand/some-demo.bf2demo\" \"%s\"", formatDemoBookmarkTimestamp(reference)),
+						fmt.Sprintf("\"second-server\" dragon_valley \"http://unused/second-server/dragon_valley/some-demo.bf2demo\" \"%s\"", formatDemoBookmarkTimestamp(reference)),
+						fmt.Sprintf("\"third-server\" \"dragon_valley\" http://unused/second-server/dragon_valley/some-demo.bf2demo \"%s\"", formatDemoBookmarkTimestamp(reference)),
+					}),
+				},
+			),
+		},
+		{
+			name: "removes bookmarks with invalid number of elements",
+			givenDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						fmt.Sprintf("\"strike_at_karkand\" \"http://unused/some-server/strike_at_karkand/some-demo.bf2demo\" \"%s\"", formatDemoBookmarkTimestamp(reference)),
+						fmt.Sprintf("\"some-other-server\" \"second-server\" dragon_valley \"http://unused/some-other-server/dragon_valley/some-demo.bf2demo\" \"%s\" \"extra-element\"", formatDemoBookmarkTimestamp(reference)),
+					}),
+				},
+			),
+			givenReference: reference,
+			givenMaxAge:    time.Hour * 24 * 7,
+			expectedDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{},
+			),
+		},
+		{
+			name: "removes bookmarks with invalid timestamps",
+			givenDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					DemoBookmarksConKeyDemoBookmark: *config.NewValueFromSlice([]string{
+						"\"some-server\" \"strike_at_karkand\" \"http://unused/some-server/strike_at_karkand/some-demo.bf2demo\" \"not-a-valid-bookmark-timestamp\"",
+					}),
+				},
+			),
+			givenReference: reference,
+			givenMaxAge:    time.Hour * 24 * 7,
+			expectedDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{},
+			),
+		},
+		{
+			name: "does nothing if bookmark key is missing",
+			givenDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"some-other-key": *config.NewValue("some-value"),
+				},
+			),
+			givenReference: reference,
+			givenMaxAge:    time.Hour * 24 * 7,
+			expectedDemoBookmarksCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"some-other-key": *config.NewValue("some-value"),
+				},
+			),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			demoBookmarksCon := tt.givenDemoBookmarksCon
+
+			// WHEN
+			PurgeOldDemoBookmarks(demoBookmarksCon, tt.givenReference, tt.givenMaxAge)
+
+			// THEN
+			assert.Equal(t, tt.expectedDemoBookmarksCon, demoBookmarksCon)
+		})
+	}
+}
+
 func TestMarkAllVoiceOverHelpAsPlayed(t *testing.T) {
 	type test struct {
 		name               string
@@ -723,4 +869,18 @@ func TestMarkAllVoiceOverHelpAsPlayed(t *testing.T) {
 			assert.Equal(t, tt.expectedGeneralCon, generalCon)
 		})
 	}
+}
+
+func buildDemoBookmark(serverName string, mapName string, timestamp time.Time) string {
+	ts := formatDemoBookmarkTimestamp(timestamp)
+	return fmt.Sprintf(
+		"\"%[1]s\" \"%[2]s\" \"http://unused/%[1]s/%[2]s/%[3]s.bf2demo\" \"%[3]s\"",
+		serverName,
+		mapName,
+		ts,
+	)
+}
+
+func formatDemoBookmarkTimestamp(timestamp time.Time) string {
+	return timestamp.Format(demoBookmarkTimestampLayout)
 }

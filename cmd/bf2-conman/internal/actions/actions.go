@@ -1,11 +1,18 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/cetteup/conman/pkg/config"
 	"github.com/cetteup/conman/pkg/game/bf2"
 	"github.com/cetteup/conman/pkg/handler"
+)
+
+const (
+	demoBookmarkMaxAge = time.Hour * 24 * 7
 )
 
 func SetDefaultProfile(h *handler.Handler, profileKey string) error {
@@ -66,6 +73,21 @@ func PurgeServerHistory(h *handler.Handler, profileKey string) error {
 	bf2.PurgeServerHistory(generalCon)
 
 	return h.WriteConfigFile(generalCon)
+}
+
+func PurgeOldDemoBookmarks(h *handler.Handler, profileKey string) error {
+	demoBookmarksCon, err := bf2.ReadProfileConfigFile(h, profileKey, bf2.ProfileConfigFileDemoBookmarksCon)
+	if err != nil {
+		// We want to clean the demo bookmarks, so we don't consider it an error if the file is missing
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
+	bf2.PurgeOldDemoBookmarks(demoBookmarksCon, time.Now(), demoBookmarkMaxAge)
+
+	return h.WriteConfigFile(demoBookmarksCon)
 }
 
 func MarkAllVoiceOverHelpAsPlayed(h *handler.Handler, profileKey string) error {

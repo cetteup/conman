@@ -4,7 +4,10 @@ package bf2
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/cetteup/conman/pkg/config"
 	"github.com/cetteup/conman/pkg/game"
@@ -26,7 +29,8 @@ const (
 
 	DefaultProfileKey = "Default"
 	// profileKeyMaxLength BF2 only uses 4 digit profile keys
-	profileKeyMaxLength = 4
+	profileKeyMaxLength         = 4
+	demoBookmarkTimestampLayout = "2006-01-02 15:04:05"
 
 	GlobalConKeyDefaultProfileRef = "GlobalSettings.setDefaultUser"
 
@@ -36,6 +40,12 @@ const (
 
 	GeneralConKeyServerHistory       = "GeneralSettings.addServerHistory"
 	GeneralConKeyVoiceOverHelpPlayed = "GeneralSettings.setPlayedVOHelp"
+
+	DemoBookmarksConKeyDemoBookmark = "LocalProfile.addDemoBookmark"
+)
+
+var (
+	demoBookmarkRegex = regexp.MustCompile("\".*?\"|\\S+")
 )
 
 // Read a config file from the given Battlefield 2 profile
@@ -157,6 +167,40 @@ func GetEncryptedLogin(profileCon *config.Config) (string, string, error) {
 // Remove all server history entries (GeneralSettings.addServerHistory) from given General.con config
 func PurgeServerHistory(generalCon *config.Config) {
 	generalCon.Delete(GeneralConKeyServerHistory)
+}
+
+// Remove all demo bookmarks older than the given duration (actual age is calculated based on the given reference)
+func PurgeOldDemoBookmarks(demoBookmarksCon *config.Config, reference time.Time, maxAge time.Duration) {
+	// We want to remove (some) bookmarks, so a missing key is fine
+	demoBookmark, err := demoBookmarksCon.GetValue(DemoBookmarksConKeyDemoBookmark)
+	if err != nil {
+		return
+	}
+
+	bookmarks := demoBookmark.Slice()
+	keepers := make([]string, 0, len(bookmarks))
+	for _, bm := range bookmarks {
+		// Bookmark value format: `"{server name}" "{map name}" "{download link}" "{timestamp}"`
+		elements := demoBookmarkRegex.FindAllString(bm, 4)
+		if len(elements) != 4 {
+			continue
+		}
+		timestamp := strings.Trim(elements[3], "\"")
+		from, err := time.Parse(demoBookmarkTimestampLayout, timestamp)
+		if err != nil {
+			continue
+		}
+		age := reference.Sub(from)
+		if age <= maxAge {
+			keepers = append(keepers, bm)
+		}
+	}
+
+	if len(keepers) > 0 {
+		demoBookmarksCon.SetValue(DemoBookmarksConKeyDemoBookmark, *config.NewValueFromSlice(keepers))
+	} else {
+		demoBookmarksCon.Delete(DemoBookmarksConKeyDemoBookmark)
+	}
 }
 
 // Add all voice over help lines as played (GeneralSettings.setPlayedVOHelp) in given General.con config

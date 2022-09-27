@@ -14,7 +14,7 @@ import (
 
 const (
 	windowWidth  = 300
-	windowHeight = 395
+	windowHeight = 425
 )
 
 type DropDownItem struct { // Used in the ComboBox dropdown
@@ -100,6 +100,17 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 								walk.MsgBox(mw, "Error", "Failed to purge server history", walk.MsgBoxIconError)
 							} else {
 								walk.MsgBox(mw, "Success", "Purged server history", walk.MsgBoxIconInformation)
+							}
+						},
+					},
+					declarative.PushButton{
+						Text: "Purge old demo bookmarks",
+						OnClicked: func() {
+							err := actions.PurgeOldDemoBookmarks(h, profiles[profileSelection.CurrentIndex()].Key)
+							if err != nil {
+								walk.MsgBox(mw, "Error", "Failed to purge demo bookmarks", walk.MsgBoxIconError)
+							} else {
+								walk.MsgBox(mw, "Success", "Purged all demo bookmarks older than one week", walk.MsgBoxIconInformation)
 							}
 						},
 					},
