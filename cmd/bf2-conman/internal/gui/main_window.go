@@ -202,7 +202,7 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 				},
 			},
 			declarative.Label{
-				Text:       "BF2 conman v0.1.4",
+				Text:       "BF2 conman v0.1.5",
 				Alignment:  declarative.AlignHCenterVCenter,
 				TextColor:  walk.Color(win.GetSysColor(win.COLOR_GRAYTEXT)),
 				Background: declarative.SolidColorBrush{Color: walk.Color(win.GetSysColor(win.COLOR_BTNFACE))},

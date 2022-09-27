@@ -3,7 +3,7 @@
     <assemblyIdentity
             type="win32"
             name="bf2-conman"
-            version="0.1.4.0"
+            version="0.1.5.0"
             processorArchitecture="*"/>
     <dependency>
         <dependentAssembly>
