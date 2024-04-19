@@ -7,4 +7,4 @@ Go module and GUI/CLI tool for managing Refractor engine configuration files
 [![Last commit](https://img.shields.io/github/last-commit/cetteup/conman)](https://github.com/cetteup/conman/commits/main)
 
 
-![bf2-conman](https://user-images.githubusercontent.com/17167062/192635276-30f6908c-9bf0-4e7b-ba60-e5e2a9a820f7.png)
+![bf2-conman](https://github.com/cetteup/conman/assets/17167062/fad0759d-bcf9-4f06-8e3e-b4a99d68e5a5)
