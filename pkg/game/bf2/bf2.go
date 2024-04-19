@@ -39,6 +39,7 @@ const (
 	ProfileConKeyPassword    = "LocalProfile.setPassword"
 
 	GeneralConKeyServerHistory       = "GeneralSettings.addServerHistory"
+	GeneralConKeyFavoriteServer      = "GeneralSettings.addFavouriteServer"
 	GeneralConKeyVoiceOverHelpPlayed = "GeneralSettings.setPlayedVOHelp"
 
 	DemoBookmarksConKeyDemoBookmark = "LocalProfile.addDemoBookmark"
@@ -167,6 +168,10 @@ func GetEncryptedLogin(profileCon *config.Config) (string, string, error) {
 // Remove all server history entries (GeneralSettings.addServerHistory) from given General.con config
 func PurgeServerHistory(generalCon *config.Config) {
 	generalCon.Delete(GeneralConKeyServerHistory)
+}
+
+func PurgeServerFavorites(generalCon *config.Config) {
+	generalCon.Delete(GeneralConKeyFavoriteServer)
 }
 
 // Remove all demo bookmarks older than the given duration (actual age is calculated based on the given reference)

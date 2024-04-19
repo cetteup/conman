@@ -75,6 +75,17 @@ func PurgeServerHistory(h *handler.Handler, profileKey string) error {
 	return h.WriteConfigFile(generalCon)
 }
 
+func PurgeServerFavorites(h *handler.Handler, profileKey string) error {
+	generalCon, err := bf2.ReadProfileConfigFile(h, profileKey, bf2.ProfileConfigFileGeneralCon)
+	if err != nil {
+		return err
+	}
+
+	bf2.PurgeServerFavorites(generalCon)
+
+	return h.WriteConfigFile(generalCon)
+}
+
 func PurgeOldDemoBookmarks(h *handler.Handler, profileKey string) error {
 	demoBookmarksCon, err := bf2.ReadProfileConfigFile(h, profileKey, bf2.ProfileConfigFileDemoBookmarksCon)
 	if err != nil {

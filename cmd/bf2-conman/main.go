@@ -26,6 +26,7 @@ func init() {
 func main() {
 	var noGUI bool
 	var doPurgeServerHistory bool
+	var doPurgeServerFavorites bool
 	var doPurgeOldDemoBookmarks bool
 	var doMarkAllVoiceOverHelpAsPlayed bool
 	var doPurgeShaderCache bool
@@ -33,6 +34,7 @@ func main() {
 	var setDefaultProfileKey string
 	flag.BoolVar(&noGUI, "no-gui", false, "do not open/use the graphical user interface")
 	flag.BoolVar(&doPurgeServerHistory, "purge-server-history", false, "purge all server history entries from the current default profile")
+	flag.BoolVar(&doPurgeServerFavorites, "purge-server-favorites", false, "purge all server favorites from the current default profile")
 	flag.BoolVar(&doPurgeOldDemoBookmarks, "purge-old-demo-bookmarks", false, "purge all old demo bookmarks (older than 1 week) from the current default profile")
 	flag.BoolVar(&doMarkAllVoiceOverHelpAsPlayed, "disable-help-voice-overs", false, "mark all help voice over lines as played for the current default profile")
 	flag.BoolVar(&doPurgeShaderCache, "purge-shader-cache", false, "purge all shader cache files and folders")
@@ -81,6 +83,15 @@ func main() {
 				log.Error().Err(err).Str(logKeyProfile, defaultProfileKey).Msg("Failed to purge server history from current default profile")
 			} else {
 				log.Info().Str(logKeyProfile, defaultProfileKey).Msg("Purged server history from current default profile")
+			}
+		}
+
+		if doPurgeServerFavorites {
+			err = actions.PurgeServerFavorites(h, defaultProfileKey)
+			if err != nil {
+				log.Error().Err(err).Str(logKeyProfile, defaultProfileKey).Msg("Failed to purge server favorites from current default profile")
+			} else {
+				log.Info().Str(logKeyProfile, defaultProfileKey).Msg("Purged server favorites from current default profile")
 			}
 		}
 

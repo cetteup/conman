@@ -664,6 +664,77 @@ func TestPurgeServerHistory(t *testing.T) {
 	}
 }
 
+func TestPurgeServerFavorites(t *testing.T) {
+	type test struct {
+		name               string
+		givenGeneralCon    *config.Config
+		expectedGeneralCon *config.Config
+	}
+
+	tests := []test{
+		{
+			name: "removes single favorite server from General.con",
+			givenGeneralCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					"GeneralSettings.addFavouriteServer": *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\""),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
+		},
+		{
+			name: "removes multiple favorite server items from General.con",
+			givenGeneralCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+					"GeneralSettings.addFavouriteServer": *config.NewValue("\"135.125.56.26\" 29940 \"=DOG= No Explosives (Infantry)\";\"37.230.210.130\" 29900 \"PlayBF2! T~GAMER #1 Allmaps\""),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
+		},
+		{
+			name: "does nothing if General.con does not contain any server history items",
+			givenGeneralCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
+			expectedGeneralCon: config.New(
+				"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\General.con",
+				map[string]config.Value{
+					"GeneralSettings.setHUDTransparency": *config.NewValue("67.7346"),
+				},
+			),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// GIVEN
+			generalCon := tt.givenGeneralCon
+
+			// WHEN
+			PurgeServerFavorites(generalCon)
+
+			// THEN
+			assert.Equal(t, tt.expectedGeneralCon, generalCon)
+		})
+	}
+}
+
 func TestPurgeOldDemoBookmarks(t *testing.T) {
 	type test struct {
 		name                     string
