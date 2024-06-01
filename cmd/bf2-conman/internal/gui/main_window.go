@@ -2,14 +2,17 @@ package gui
 
 import (
 	_ "embed"
+	"errors"
 	"strconv"
 
-	"github.com/cetteup/conman/cmd/bf2-conman/internal/actions"
-	"github.com/cetteup/conman/pkg/game"
-	"github.com/cetteup/conman/pkg/handler"
 	"github.com/lxn/walk"
 	"github.com/lxn/walk/declarative"
 	"github.com/lxn/win"
+
+	"github.com/cetteup/conman/cmd/bf2-conman/internal/actions"
+	"github.com/cetteup/conman/pkg/config"
+	"github.com/cetteup/conman/pkg/game"
+	"github.com/cetteup/conman/pkg/handler"
 )
 
 const (
@@ -152,7 +155,13 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 											profile := profiles[profileSelection.CurrentIndex()]
 											password, err := actions.GetProfilePassword(h, profile.Key)
 											if err != nil {
-												walk.MsgBox(mw, "Error", "Failed get profile password\n\nIf the password was encrypted on another Windows installation or with another user, the password cannot be decrypted by design.\n\nYou can provide the password via the password \"Edit\" functionality or by logging in in game.", walk.MsgBoxIconError)
+												// Show a warning instead of an error if the profile simply doesn't contain a password
+												var keyError *config.ErrNoSuchKey
+												if errors.As(err, &keyError) {
+													walk.MsgBox(mw, "Warning", "Profile does not contain a password\n\nYou can set the password via the password \"Edit\" functionality or by logging in in game and selecting the \"remember password\" option.", walk.MsgBoxIconWarning)
+													return
+												}
+												walk.MsgBox(mw, "Error", "Failed get profile password\n\nIf the password was encrypted on another Windows installation or with another user, the password cannot be decrypted by design.\n\nYou can provide the password via the password \"Edit\" functionality or by logging in in game and selecting the \"remember password\" option.", walk.MsgBoxIconError)
 												return
 											}
 											if err := walk.Clipboard().SetText(password); err != nil {
@@ -168,7 +177,11 @@ func CreateMainWindow(h *handler.Handler, profiles []game.Profile, defaultProfil
 											profile := profiles[profileSelection.CurrentIndex()]
 											password, err := actions.GetProfilePassword(h, profile.Key)
 											if err != nil {
-												walk.MsgBox(mw, "Error", "Failed get profile password\n\nIf the password was encrypted on another Windows installation or with another user, the password cannot be decrypted by design.\n\nYou can still update the password, but ensure you know the current password before continuing.", walk.MsgBoxIconError)
+												// Only show an error if profile contains a password, but it failed to be decrypted
+												var keyError *config.ErrNoSuchKey
+												if !errors.As(err, &keyError) {
+													walk.MsgBox(mw, "Error", "Failed get profile password\n\nIf the password was encrypted on another Windows installation or with another user, the password cannot be decrypted by design.\n\nYou can still update the password, but ensure you know the current password before continuing.", walk.MsgBoxIconError)
+												}
 											}
 											if cmd, err := RunPasswordEditDialog(mw, h, profile, password); err != nil {
 												walk.MsgBox(mw, "Error", "Failed to set password", walk.MsgBoxIconError)
