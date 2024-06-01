@@ -35,7 +35,9 @@ const (
 	GlobalConKeyDefaultProfileRef = "GlobalSettings.setDefaultUser"
 
 	ProfileConKeyName        = "LocalProfile.setName"
+	ProfileConKeyNick        = "LocalProfile.setNick"
 	ProfileConKeyGamespyNick = "LocalProfile.setGamespyNick"
+	ProfileConKeyEmail       = "LocalProfile.setEmail"
 	ProfileConKeyPassword    = "LocalProfile.setPassword"
 
 	GeneralConKeyServerHistory       = "GeneralSettings.addServerHistory"
@@ -89,8 +91,8 @@ func GetProfiles(h game.Handler) ([]game.Profile, error) {
 		}
 
 		profileType := game.ProfileTypeMultiplayer
-		// Singleplayer profiles do not contain a password
-		if !profileCon.HasKey(ProfileConKeyPassword) {
+		// Singleplayer profiles do not contain an email address
+		if !profileCon.HasKey(ProfileConKeyEmail) {
 			profileType = game.ProfileTypeSingleplayer
 		}
 
