@@ -112,8 +112,8 @@ func TestGetProfiles(t *testing.T) {
 				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0001").Return(config.New(
 					"C:\\Users\\default\\Documents\\Battlefield 2\\Profiles\\0001\\Profile.con",
 					map[string]config.Value{
-						ProfileConKeyName:     *config.NewValue("some-multiplayer-profile"),
-						ProfileConKeyPassword: *config.NewValue("some-password"),
+						ProfileConKeyName:  *config.NewValue("some-multiplayer-profile"),
+						ProfileConKeyEmail: *config.NewValue("some-address@some-domain.some-tld"),
 					},
 				), nil)
 				h.EXPECT().ReadProfileConfig(handler.GameBf2, "0002").Return(config.New(
