@@ -6,8 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cetteup/conman/pkg/config"
 	"golang.org/x/sys/windows"
+
+	"github.com/cetteup/conman/pkg/config"
 )
 
 type Game string

@@ -9,12 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cetteup/conman/pkg/config"
-	"github.com/cetteup/conman/pkg/game"
-	"github.com/cetteup/conman/pkg/handler"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cetteup/conman/pkg/config"
+	"github.com/cetteup/conman/pkg/game"
+	"github.com/cetteup/conman/pkg/handler"
 )
 
 func TestReadProfileConfigFile(t *testing.T) {

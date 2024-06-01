@@ -6,13 +6,14 @@ import (
 	"flag"
 	"os"
 
+	filerepo "github.com/cetteup/filerepo/pkg"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"github.com/cetteup/conman/cmd/bf2-conman/internal/actions"
 	"github.com/cetteup/conman/cmd/bf2-conman/internal/gui"
 	"github.com/cetteup/conman/pkg/game/bf2"
 	"github.com/cetteup/conman/pkg/handler"
-	filerepo "github.com/cetteup/filerepo/pkg"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 const (

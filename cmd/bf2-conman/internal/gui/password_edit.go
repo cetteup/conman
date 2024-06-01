@@ -3,12 +3,13 @@ package gui
 import (
 	"fmt"
 
-	"github.com/cetteup/conman/cmd/bf2-conman/internal/actions"
-	"github.com/cetteup/conman/pkg/game"
-	"github.com/cetteup/conman/pkg/handler"
 	"github.com/lxn/walk"
 	"github.com/lxn/walk/declarative"
 	"github.com/lxn/win"
+
+	"github.com/cetteup/conman/cmd/bf2-conman/internal/actions"
+	"github.com/cetteup/conman/pkg/game"
+	"github.com/cetteup/conman/pkg/handler"
 )
 
 func RunPasswordEditDialog(owner walk.Form, h *handler.Handler, profile game.Profile, currentPassword string) (int, error) {
