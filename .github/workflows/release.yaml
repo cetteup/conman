@@ -18,7 +18,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: 1.22.2
+          goversion: 1.22.3
           project_path: cmd/bf2-conman
           binary_name: bf2-conman
           pre_command: go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@v1.4.0 && pushd cmd/bf2-conman && go generate && popd
