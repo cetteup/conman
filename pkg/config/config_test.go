@@ -145,7 +145,7 @@ func TestConfig_GetValue(t *testing.T) {
 				},
 			},
 			givenKey:        "some-other-key",
-			wantErrContains: "no such key in config",
+			wantErrContains: "no such key",
 		},
 	}
 

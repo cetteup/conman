@@ -13,11 +13,12 @@ const (
 )
 
 type ErrNoSuchKey struct {
-	key string
+	path string
+	key  string
 }
 
 func (e *ErrNoSuchKey) Error() string {
-	return fmt.Sprintf("no such key in config: %s", e.key)
+	return fmt.Sprintf("no such key in %s: %q", e.path, e.key)
 }
 
 type Config struct {
@@ -67,7 +68,10 @@ func (c *Config) HasKey(key string) bool {
 func (c *Config) GetValue(key string) (Value, error) {
 	value, ok := c.content[key]
 	if !ok {
-		return Value{}, &ErrNoSuchKey{key: key}
+		return Value{}, &ErrNoSuchKey{
+			path: c.Path,
+			key:  key,
+		}
 	}
 	return value, nil
 }

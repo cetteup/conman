@@ -181,7 +181,7 @@ func TestGetProfiles(t *testing.T) {
 					},
 				), nil)
 			},
-			wantErrContains: "no such key in config",
+			wantErrContains: "no such key",
 		},
 	}
 
