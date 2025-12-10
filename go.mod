@@ -1,6 +1,6 @@
 module github.com/cetteup/conman
 
-go 1.18
+go 1.24.0
 
 require (
 	github.com/cetteup/filerepo v0.0.5
@@ -9,7 +9,7 @@ require (
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/sys v0.20.0
+	golang.org/x/sys v0.39.0
 )
 
 require (
