@@ -1,3 +1,5 @@
+github.com/akavel/rsrc v0.10.2 h1:Zxm8V5eI1hW4gGaYsJQUhxpjkENuG91ki8B4zCrvEsw=
+github.com/akavel/rsrc v0.10.2/go.mod h1:uLoCtb9J+EyAqh+26kdrTgmzRBFPGOolLWKpdxkKq+c=
 github.com/cetteup/filerepo v0.0.4 h1:DrTak5u75ZwQxf2F+bXisR0tEPKEz7YM0QVnUayHmDE=
 github.com/cetteup/filerepo v0.0.4/go.mod h1:WYNmlgoK/laihF1csFe862ZVWYnruQVg9qDoo21ZFdA=
 github.com/cetteup/filerepo v0.0.5 h1:U0Jm+e8L5vKblwFHh4CjcgDgyVPEoa0pdi0izgUDfQ4=
@@ -10,6 +12,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
 github.com/golang/mock v1.6.0/go.mod h1:p6yTPP+5HYm5mzsMV8JkE6ZKdX+/wYM6Hr+LicevLPs=
+github.com/josephspurrier/goversioninfo v1.5.0 h1:9TJtORoyf4YMoWSOo/cXFN9A/lB3PniJ91OxIH6e7Zg=
+github.com/josephspurrier/goversioninfo v1.5.0/go.mod h1:6MoTvFZ6GKJkzcdLnU5T/RGYUbHQbKpYeNP0AgQLd2o=
 github.com/lxn/walk v0.0.0-20210112085537-c389da54e794 h1:NVRJ0Uy0SOFcXSKLsS65OmI1sgCCfiDUPj+cwnH7GZw=
 github.com/lxn/walk v0.0.0-20210112085537-c389da54e794/go.mod h1:E23UucZGqpuUANJooIbHWCufXvOcT6E7Stq81gU+CSQ=
 github.com/lxn/win v0.0.0-20210218163916-a377121e959e h1:H+t6A/QJMbhCSEH5rAuRxh+CtW96g0Or0Fxa9IKr4uc=
