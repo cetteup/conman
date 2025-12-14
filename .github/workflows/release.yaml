@@ -1,11 +1,12 @@
 name: release
+
 on:
   release:
     types: [created]
 
 jobs:
-  releases-matrix:
-    name: release bf2-conman go binary
+  release:
+    name: Release Go binary
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -13,6 +14,7 @@ jobs:
         goarch: ["386", amd64]
     steps:
       - uses: actions/checkout@v6
+
       - uses: wangyoucao577/go-release-action@v1.55
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -23,4 +25,5 @@ jobs:
           binary_name: bf2-conman
           pre_command: go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@v1.4.0 && pushd cmd/bf2-conman && go generate && popd
           ldflags: -s -w -H windowsgui
-          sha256sum: true
+          md5sum: false
+          sha256sum: false
